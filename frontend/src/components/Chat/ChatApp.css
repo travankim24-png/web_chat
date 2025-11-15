@@ -1,20 +1,24 @@
 .chat-app {
   display: flex;
   height: 100vh;
-  background-color: #f0f2f5;
+  background-color: var(--ig-primary-background);
+  max-width: 935px;
+  margin: 0 auto;
+  border-left: 1px solid var(--ig-border-color);
+  border-right: 1px solid var(--ig-border-color);
 }
 
 .chat-sidebar {
   width: 350px;
-  background: white;
-  border-right: 1px solid #e0e0e0;
+  background: var(--ig-primary-background);
+  border-right: 1px solid var(--ig-border-color);
   display: flex;
   flex-direction: column;
 }
 
 .sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--ig-border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,46 +26,54 @@
 
 .sidebar-header h2 {
   margin: 0;
-  font-size: 24px;
-  color: #111;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ig-primary-text);
 }
 
 .sidebar-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .btn-new-chat,
 .btn-logout {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
   border: none;
-  background-color: #f0f2f5;
+  background-color: transparent;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
+  transition: opacity 0.2s;
+  color: var(--ig-primary-text);
 }
 
 .btn-new-chat:hover,
 .btn-logout:hover {
-  background-color: #e4e6eb;
+  opacity: 0.6;
 }
 
 .chat-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: var(--ig-primary-background);
 }
 
 .no-conversation-selected {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #65676b;
+  color: var(--ig-secondary-text);
+}
+
+.no-conversation-selected h3 {
+  font-weight: 300;
+  font-size: 22px;
 }

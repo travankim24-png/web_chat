@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,8 +12,8 @@
 }
 
 .modal-content {
-  background: white;
-  border-radius: 10px;
+  background: var(--ig-primary-background);
+  border-radius: 12px;
   width: 90%;
   max-width: 500px;
   max-height: 80vh;
@@ -22,35 +22,39 @@
 }
 
 .modal-header {
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--ig-border-color);
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .modal-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ig-primary-text);
 }
 
 .btn-close {
   background: none;
   border: none;
-  font-size: 30px;
+  font-size: 28px;
   cursor: pointer;
-  color: #65676b;
-  width: 35px;
-  height: 35px;
+  color: var(--ig-primary-text);
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
+  position: absolute;
+  right: 16px;
+  transition: opacity 0.2s;
 }
 
 .btn-close:hover {
-  background-color: #f0f2f5;
+  opacity: 0.6;
 }
 
 .modal-body {
@@ -90,33 +94,32 @@
 .user-item {
   display: flex;
   align-items: center;
-  padding: 12px;
+  padding: 8px 12px;
   cursor: pointer;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: background-color 0.2s;
-  border: 2px solid transparent;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  transition: background-color 0.1s;
+  border: 1px solid transparent;
 }
 
 .user-item:hover {
-  background-color: #f0f2f5;
+  background-color: var(--ig-secondary-background);
 }
 
 .user-item.selected {
-  background-color: #e7f3ff;
-  border-color: #667eea;
+  background-color: var(--ig-secondary-background);
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 600;
   margin-right: 12px;
 }
 
@@ -126,19 +129,20 @@
 
 .user-name {
   font-weight: 600;
-  color: #050505;
+  color: var(--ig-primary-text);
   margin-bottom: 2px;
+  font-size: 14px;
 }
 
 .user-email {
-  font-size: 13px;
-  color: #65676b;
+  font-size: 14px;
+  color: var(--ig-secondary-text);
 }
 
 .checkmark {
-  color: #667eea;
-  font-size: 20px;
-  font-weight: bold;
+  color: var(--ig-blue);
+  font-size: 24px;
+  font-weight: normal;
 }
 
 .modal-footer {
@@ -151,33 +155,34 @@
 
 .btn-cancel,
 .btn-create {
-  padding: 10px 20px;
+  padding: 7px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.2s;
+  font-size: 14px;
+  transition: opacity 0.2s;
 }
 
 .btn-cancel {
-  background-color: #f0f2f5;
-  color: #050505;
+  background-color: transparent;
+  color: var(--ig-primary-text);
 }
 
 .btn-cancel:hover {
-  background-color: #e4e6eb;
+  opacity: 0.6;
 }
 
 .btn-create {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ig-blue);
   color: white;
 }
 
 .btn-create:hover {
-  transform: translateY(-2px);
+  background: var(--ig-blue-hover);
 }
 
 .btn-create:disabled {
-  opacity: 0.7;
+  opacity: 0.3;
   cursor: not-allowed;
 }

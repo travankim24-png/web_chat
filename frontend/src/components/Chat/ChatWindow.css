@@ -6,27 +6,29 @@
 
 .chat-header {
   padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
-  background: white;
+  border-bottom: 1px solid var(--ig-border-color);
+  background: var(--ig-primary-background);
 }
 
 .chat-header-info h3 {
   margin: 0;
-  font-size: 18px;
-  color: #050505;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ig-primary-text);
 }
 
 .chat-header-info p {
-  margin: 5px 0 0 0;
-  font-size: 13px;
-  color: #65676b;
+  margin: 3px 0 0 0;
+  font-size: 12px;
+  color: var(--ig-secondary-text);
+  font-weight: 400;
 }
 
 .messages-container {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  background-color: #f0f2f5;
+  background-color: var(--ig-primary-background);
 }
 
 .message {
@@ -45,102 +47,116 @@
 
 .message-sender {
   font-size: 12px;
-  color: #65676b;
+  color: var(--ig-secondary-text);
   margin-bottom: 4px;
   margin-left: 12px;
+  font-weight: 600;
 }
 
 .message-bubble {
   max-width: 60%;
-  padding: 10px 15px;
-  border-radius: 18px;
+  padding: 16px 12px;
+  border-radius: 22px;
   position: relative;
 }
 
 .message-sent .message-bubble {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ig-blue);
   color: white;
 }
 
 .message-received .message-bubble {
-  background: white;
-  color: #050505;
+  background: var(--ig-border-color);
+  color: var(--ig-primary-text);
+  border: 1px solid var(--ig-border-color);
 }
 
 .message-text {
   word-wrap: break-word;
   white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 18px;
 }
 
 .message-file a {
   color: inherit;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 .message-file a:hover {
-  text-decoration: underline;
+  opacity: 0.8;
 }
 
 .message-time {
   font-size: 11px;
   margin-top: 4px;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .typing-indicator {
   padding: 10px;
-  color: #65676b;
-  font-size: 13px;
-  font-style: italic;
+  color: var(--ig-secondary-text);
+  font-size: 14px;
+  font-style: normal;
 }
 
 .chat-input-container {
   padding: 20px;
-  background: white;
-  border-top: 1px solid #e0e0e0;
+  background: var(--ig-primary-background);
+  border-top: 1px solid var(--ig-border-color);
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  align-items: center;
 }
 
 .btn-attach {
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   border: none;
-  background-color: #f0f2f5;
-  border-radius: 50%;
+  background-color: transparent;
   cursor: pointer;
-  font-size: 20px;
-  transition: background-color 0.2s;
+  font-size: 24px;
+  transition: opacity 0.2s;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-attach:hover {
-  background-color: #e4e6eb;
+  opacity: 0.6;
 }
 
 .chat-input {
   flex: 1;
-  padding: 10px 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  font-size: 15px;
+  padding: 8px 16px;
+  border: 1px solid var(--ig-border-color);
+  border-radius: 22px;
+  font-size: 14px;
   outline: none;
+  background-color: var(--ig-primary-background);
+  color: var(--ig-primary-text);
 }
 
 .chat-input:focus {
-  border-color: #667eea;
+  border-color: var(--ig-secondary-text);
 }
 
 .btn-send {
-  padding: 10px 25px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  padding: 0;
+  background: transparent;
+  color: var(--ig-blue);
   border: none;
-  border-radius: 20px;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.2s;
+  font-size: 14px;
+  transition: opacity 0.2s;
 }
 
 .btn-send:hover {
-  transform: translateY(-2px);
+  opacity: 0.7;
+}
+
+.btn-send:disabled {
+  opacity: 0.3;
 }

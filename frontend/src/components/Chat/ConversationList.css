@@ -6,39 +6,40 @@
 .no-conversations {
   padding: 20px;
   text-align: center;
-  color: #65676b;
+  color: var(--ig-secondary-text);
+  font-size: 14px;
 }
 
 .conversation-item {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 8px 20px;
   cursor: pointer;
-  transition: background-color 0.2s;
-  border-bottom: 1px solid #f0f2f5;
+  transition: background-color 0.1s;
 }
 
 .conversation-item:hover {
-  background-color: #f0f2f5;
+  background-color: var(--ig-secondary-background);
 }
 
 .conversation-item.active {
-  background-color: #e7f3ff;
+  background-color: var(--ig-secondary-background);
 }
 
 .conversation-avatar {
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  font-weight: bold;
-  margin-right: 15px;
+  font-weight: 600;
+  margin-right: 12px;
   flex-shrink: 0;
+  border: 2px solid var(--ig-primary-background);
 }
 
 .conversation-info {
@@ -48,17 +49,19 @@
 
 .conversation-name {
   font-weight: 600;
-  color: #050505;
-  margin-bottom: 4px;
+  color: var(--ig-primary-text);
+  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 14px;
 }
 
 .conversation-members {
-  font-size: 13px;
-  color: #65676b;
+  font-size: 14px;
+  color: var(--ig-secondary-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 400;
 }
