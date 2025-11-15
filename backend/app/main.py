@@ -1,9 +1,10 @@
 # app/main.py
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from . import db, models
+from . import db, models, auth
+
 from .routes import auth_routes, conversation_routes, file_routes, user_routes, message_routes
 from .websocket_manager import manager
 from starlette.concurrency import run_in_threadpool
@@ -32,11 +33,20 @@ models.Base.metadata.create_all(bind=db.engine)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
-# ✅ Websocket handler
+# ✅ Websocket handler (có xác thực token)
 @app.websocket("/ws/{conversation_id}/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, conversation_id: int, user_id: int):
+async def websocket_endpoint(websocket: WebSocket, conversation_id: int, user_id: int, token: str = Query(None)):
+    # ✅ Kiểm tra token
+    payload = None
+    if token:
+        payload = auth.decode_access_token(token)
+    if not payload or "sub" not in payload or int(payload["sub"]) != user_id:
+        await websocket.close(code=1008)  # Unauthorized
+        return
+
     await manager.connect(conversation_id, websocket)
     try:
+        # Báo presence
         await manager.broadcast_to_conversation(
             conversation_id, {"type": "presence", "user_id": user_id, "status": "online"}
         )
@@ -81,14 +91,16 @@ async def websocket_endpoint(websocket: WebSocket, conversation_id: int, user_id
             elif payload.get("type") == "seen":
                 await manager.broadcast_to_conversation(
                     int(conversation_id),
-                    {
-                        "type": "seen",
-                        "user_id": user_id,
-                        "message_ids": payload.get("message_ids"),
-                    },
+                    {"type": "seen", "user_id": user_id, "message_ids": payload.get("message_ids")},
                 )
 
-    except:
+            elif payload.get("type") == "typing":
+                await manager.broadcast_to_conversation(
+                    int(conversation_id),
+                    {"type": "typing", "user_id": user_id, "status": payload.get("status", True)},
+                )
+
+    except WebSocketDisconnect:
         pass
     finally:
         manager.disconnect(conversation_id, websocket)
