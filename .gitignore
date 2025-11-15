@@ -23,3 +23,12 @@ www-test/
 
 #old GWT (1.5) created this dir
 .gwt-tmp/
+
+# File môi trường - RẤT QUAN TRỌNG
+.env
+
+# Thư mục cache của Python
+__pycache__/
+
+# File cài đặt pip
+get-pip.py
