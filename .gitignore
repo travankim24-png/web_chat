@@ -32,3 +32,5 @@ __pycache__/
 
 # File cài đặt pip
 get-pip.py
+
+backend/uploads/

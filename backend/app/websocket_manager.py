@@ -1,63 +1,81 @@
 # app/websocket_manager.py
+
 import asyncio
-from typing import Dict, Set
 from fastapi import WebSocket
+from typing import Dict
+
 
 class ConversationManager:
     """
-    Quản lý các kết nối WebSocket theo conversation_id.
-    - rooms: map conversation_id -> set(WebSocket)
+    Quản lý WebSocket theo dạng:
+    rooms = {
+        conversation_id: {
+            user_id: websocket
+        }
+    }
     """
 
     def __init__(self):
-        self.rooms: Dict[int, Set[WebSocket]] = {}
-        # lock tránh race condition khi multi-threads
+        # { conversation_id: { user_id: websocket } }
+        self.rooms: Dict[int, Dict[int, WebSocket]] = {}
         self._lock = asyncio.Lock()
 
-    async def connect(self, conversation_id: int, websocket: WebSocket):
-        """Chấp nhận kết nối (websocket.accept) và add vào room."""
-        await websocket.accept()
+    # ------------------------------------------------------------------
+    # KẾT NỐI
+    # ------------------------------------------------------------------
+    async def connect(self, conversation_id: int, user_id: int, websocket: WebSocket):
         async with self._lock:
             if conversation_id not in self.rooms:
-                self.rooms[conversation_id] = set()
-            self.rooms[conversation_id].add(websocket)
+                self.rooms[conversation_id] = {}
 
+            self.rooms[conversation_id][user_id] = websocket
+
+    # ------------------------------------------------------------------
+    # NGẮT KẾT NỐI
+    # ------------------------------------------------------------------
     def disconnect(self, conversation_id: int, websocket: WebSocket):
-        """Remove websocket khỏi room (synchronous)."""
+        user_id = getattr(websocket, "user_id", None)
         try:
-            if conversation_id in self.rooms:
-                self.rooms[conversation_id].discard(websocket)
-                # nếu room rỗng thì hủy nó
+            if conversation_id in self.rooms and user_id in self.rooms[conversation_id]:
+                del self.rooms[conversation_id][user_id]
+
+                # Nếu phòng rỗng → xoá luôn
                 if not self.rooms[conversation_id]:
                     del self.rooms[conversation_id]
-        except Exception:
-            # bảo đảm không raise khi đóng kết nối
+        except:
             pass
 
+    # ------------------------------------------------------------------
+    # LẤY DANH SÁCH USER ONLINE TRONG ROOM
+    # ------------------------------------------------------------------
+    def get_online_users(self, conversation_id: int):
+        if conversation_id in self.rooms:
+            return list(self.rooms[conversation_id].keys())
+        return []
+
+    # ------------------------------------------------------------------
+    # GỬI TIN RIÊNG
+    # ------------------------------------------------------------------
     async def send_personal_message(self, websocket: WebSocket, message: dict):
-        """Gửi message cho 1 websocket."""
         try:
             await websocket.send_json(message)
-        except Exception:
-            # nếu gửi fail, ignore
+        except:
             pass
 
+    # ------------------------------------------------------------------
+    # BROADCAST
+    # ------------------------------------------------------------------
     async def broadcast_to_conversation(self, conversation_id: int, message: dict):
-        """Gửi message tới tất cả websocket trong conversation."""
-        # snapshot để tránh thay đổi set khi iterating
         sockets = []
+
         async with self._lock:
             if conversation_id in self.rooms:
-                sockets = list(self.rooms[conversation_id])
+                sockets = list(self.rooms[conversation_id].values())
 
-        # gửi không chặn nhau
-        coros = []
-        for ws in sockets:
-            coros.append(self.send_personal_message(ws, message))
-
-        if coros:
-            await asyncio.gather(*coros, return_exceptions=True)
+        if sockets:
+            tasks = [self.send_personal_message(ws, message) for ws in sockets]
+            await asyncio.gather(*tasks, return_exceptions=True)
 
 
-# export a singleton manager để dùng toàn app
+# Singleton
 manager = ConversationManager()

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -26,7 +26,7 @@ export const login = (username, password) => {
 
 // User APIs
 export const getCurrentUser = () => {
-  return api.get('/users/me');
+  return api.get('/auth/me');   // FIXED
 };
 
 export const getAllUsers = () => {
@@ -47,8 +47,8 @@ export const getMessages = (conversationId) => {
   return api.get(`/messages/${conversationId}`);
 };
 
-export const sendMessage = (conversation_id, sender_id, content, file_url = null) => {
-  return api.post('/messages/', { conversation_id, sender_id, content, file_url });
+export const sendMessage = (conversation_id, content, file_url = null) => {
+  return api.post('/messages/', { conversation_id, content, file_url }); // FIXED
 };
 
 // File APIs

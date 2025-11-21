@@ -47,3 +47,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db_s: Session = Depend
     if not user:
         raise credentials_exception
     return user
+
+def decode_access_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
