@@ -5,14 +5,23 @@ from .db import Base
 
 class User(Base):
     __tablename__ = "users"
+
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
     email = Column(String(120), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
+
     avatar_url = Column(String(255), nullable=True)
+    display_name = Column(String(100), nullable=True)
+    bio = Column(Text, nullable=True)
+    phone = Column(String(20), nullable=True)
+    address = Column(String(255), nullable=True)
+    birthday = Column(String(20), nullable=True)  # simple format YYYY-MM-DD
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     conversations = relationship("ConversationMember", back_populates="user")
+
 
 class Conversation(Base):
     __tablename__ = "conversations"

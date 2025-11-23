@@ -51,3 +51,27 @@ class MessageOut(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+class UserProfile(BaseModel):
+    id: int
+    username: str
+    email: str
+    avatar_url: Optional[str]
+    display_name: Optional[str]
+    bio: Optional[str]
+    phone: Optional[str]
+    address: Optional[str]
+    birthday: Optional[str]
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class UserProfileUpdate(BaseModel):
+    display_name: Optional[str]
+    bio: Optional[str]
+    phone: Optional[str]
+    address: Optional[str]
+    birthday: Optional[str]
+    avatar_url: Optional[str]
