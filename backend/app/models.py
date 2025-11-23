@@ -35,6 +35,7 @@ class ConversationMember(Base):
 
 class Message(Base):
     __tablename__ = "messages"
+
     id = Column(Integer, primary_key=True, index=True)
     conversation_id = Column(Integer, ForeignKey("conversations.id"))
     sender_id = Column(Integer, ForeignKey("users.id"))
@@ -44,9 +45,16 @@ class Message(Base):
 
     conversation = relationship("Conversation", back_populates="messages")
 
+    # THÊM DÒNG NÀY
+    seen_by = relationship("MessageSeen", back_populates="message")
+
 class MessageSeen(Base):
     __tablename__ = "message_seen"
+
     id = Column(Integer, primary_key=True, index=True)
     message_id = Column(Integer, ForeignKey("messages.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     seen_at = Column(DateTime, default=datetime.utcnow)
+
+    # THÊM DÒNG NÀY
+    message = relationship("Message", back_populates="seen_by")

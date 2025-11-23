@@ -128,14 +128,40 @@ async def websocket_endpoint(
             # Seen
             # --------------------------
             elif payload.get("type") == "seen":
+                message_ids = payload.get("message_ids", [])
+
+                def save_seen():
+                    db_s = next(db.get_db())
+                    try:
+                        from .models import MessageSeen
+                        for mid in message_ids:
+                            exists = (
+                                db_s.query(MessageSeen)
+                                .filter(
+                                    MessageSeen.message_id == mid,
+                                    MessageSeen.user_id == user_id
+                                )
+                                .first()
+                            )
+                            if not exists:
+                                db_s.add(MessageSeen(message_id=mid, user_id=user_id))
+                        db_s.commit()
+                    finally:
+                        db_s.close()
+
+                await run_in_threadpool(save_seen)
+
                 await manager.broadcast_to_conversation(
                     conversation_id,
                     {
                         "type": "seen",
                         "user_id": user_id,
-                        "message_ids": payload.get("message_ids"),
+                        "message_ids": message_ids,
                     },
                 )
+                print("SEEN SENT WS:", user_id, message_ids)
+
+
 
     except WebSocketDisconnect:
         pass

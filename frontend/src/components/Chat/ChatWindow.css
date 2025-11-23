@@ -160,3 +160,10 @@
 .btn-send:disabled {
   opacity: 0.3;
 }
+
+.msg-status {
+  font-size: 11px;
+  color: #030303;
+  margin-top: 3px;
+  text-align: right;
+}

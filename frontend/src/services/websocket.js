@@ -50,10 +50,14 @@ class WebSocketService {
   }
 
   sendSeen(messageIds) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type: "seen", message_ids: messageIds }));
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        this.socket.send(JSON.stringify({
+            type: "seen",
+            message_ids: messageIds
+        }));
     }
-  }
+}
+
 }
 
 const wsService = new WebSocketService();

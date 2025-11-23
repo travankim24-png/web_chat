@@ -24,19 +24,29 @@ class ConversationCreate(BaseModel):
 
 class MessageCreate(BaseModel):
     conversation_id: int
-    sender_id: int
     content: Optional[str] = None
     file_url: Optional[str] = None
+
+class SeenUser(BaseModel):
+    id: int
+    user_id: int
+    seen_at: datetime
+
+    class Config:
+        orm_mode = True
 
 class MessageOut(BaseModel):
     id: int
     conversation_id: int
     sender_id: int
-    content: Optional[str]
-    file_url: Optional[str]
+    content: Optional[str] = None
+    file_url: Optional[str] = None
     created_at: datetime
+    seen_by: Optional[List[SeenUser]] = None
+
     class Config:
         orm_mode = True
+
 
 class LoginRequest(BaseModel):
     username: str

@@ -26,7 +26,20 @@ function ChatWindow({ conversation, currentUser }) {
       console.error("Error loading messages:", err);
     }
   }, [conversation?.id]);
-
+  useEffect(() => {
+    if (messages.length === 0) return;
+  
+    const unseen = messages.filter(
+      msg => msg.sender_id !== currentUser.id &&
+             (!msg.seen_by || !msg.seen_by.some(s => s.user_id === currentUser.id))
+    );
+  
+    if (unseen.length > 0) {
+      const ids = unseen.map(m => m.id);
+      wsService.sendSeen(ids);
+    }
+  }, [messages]);
+  
   // -----------------------------
   // WebSocket listener
   // -----------------------------
@@ -37,9 +50,29 @@ function ChatWindow({ conversation, currentUser }) {
       }
       
       if (data.type === "message") {
-        setMessages((prev) => [...prev, data.message]);
-        scrollToBottom();
+        setMessages(prev => [
+          ...prev,
+          { ...data.message, seen_by: [] }   // luôn có seen_by
+        ]);
       }
+      
+
+      else if (data.type === "seen") {
+        setMessages(prev =>
+            prev.map(m =>
+                data.message_ids.includes(m.id)
+                    ? {
+                        ...m,
+                        seen_by: [
+                            ...(m.seen_by || []),
+                            { user_id: data.user_id, seen_at: new Date().toISOString() }
+                        ]
+                      }
+                    : m
+            )
+        );
+    }
+    
 
       else if (data.type === "typing") {
         if (data.user_id !== currentUser.id) {
@@ -159,7 +192,16 @@ function ChatWindow({ conversation, currentUser }) {
     const d = new Date(time);
     return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
   };
-
+  const renderSeenStatus = (msg) => {
+    if (msg.sender_id !== currentUser.id) return null;
+    if (!msg.seen_by || msg.seen_by.length === 0) return <span className="msg-status">✔ Đã gửi</span>;
+  
+    return (
+      <span className="msg-status">
+        ✔✔ Đã xem bởi {msg.seen_by.length} người
+      </span>
+    );
+  };
   // -----------------------------
   // UI
   // -----------------------------
@@ -202,6 +244,7 @@ function ChatWindow({ conversation, currentUser }) {
                 <div className="message-text">{msg.content}</div>
               )}
               <div className="message-time">{formatTime(msg.created_at)}</div>
+              {renderSeenStatus(msg)}
             </div>
           </div>
         ))}

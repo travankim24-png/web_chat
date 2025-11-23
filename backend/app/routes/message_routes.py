@@ -28,13 +28,17 @@ def send_message(
     return msg
 
 
-@router.get("/{conversation_id}", response_model=list[schemas.MessageOut])
+@router.get("/{conversation_id}")
 def get_messages(
     conversation_id: int,
     db_s: Session = Depends(db.get_db),
     current_user = Depends(auth.get_current_user)
 ):
-    conv = db_s.query(models.Conversation).filter(models.Conversation.id == conversation_id).first()
+    conv = (
+        db_s.query(models.Conversation)
+        .filter(models.Conversation.id == conversation_id)
+        .first()
+    )
     if not conv:
         raise HTTPException(status_code=404, detail=f"Conversation {conversation_id} not found")
 
@@ -48,4 +52,24 @@ def get_messages(
         .order_by(models.Message.created_at)
         .all()
     )
-    return messages
+
+    result = []
+    for msg in messages:
+        seen = (
+            db_s.query(models.MessageSeen)
+            .filter(models.MessageSeen.message_id == msg.id)
+            .all()
+        )
+
+        result.append({
+            "id": msg.id,
+            "conversation_id": msg.conversation_id,
+            "sender_id": msg.sender_id,
+            "content": msg.content,
+            "file_url": msg.file_url,
+            "created_at": msg.created_at,
+            "seen_by": [{"user_id": s.user_id, "seen_at": s.seen_at} for s in seen]
+        })
+
+    return result
+
