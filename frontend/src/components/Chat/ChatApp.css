@@ -37,7 +37,8 @@
 }
 
 .btn-new-chat,
-.btn-logout {
+.btn-logout,
+.btn-profile {
   width: 24px;
   height: 24px;
   border-radius: 0;
@@ -53,7 +54,8 @@
 }
 
 .btn-new-chat:hover,
-.btn-logout:hover {
+.btn-logout:hover,
+.btn-profile:hover {
   opacity: 0.6;
 }
 

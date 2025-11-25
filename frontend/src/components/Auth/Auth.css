@@ -40,6 +40,7 @@
   border-radius: 3px;
   font-size: 12px;
   background-color: var(--ig-secondary-background);
+  color: var(--ig-primary-text);
   transition: border-color 0.2s;
 }
 
@@ -51,6 +52,7 @@
   outline: none;
   border-color: var(--ig-secondary-text);
   background-color: var(--ig-primary-background);
+  color: var(--ig-primary-text);
 }
 
 .btn-primary {

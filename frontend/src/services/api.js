@@ -33,6 +33,18 @@ export const getAllUsers = () => {
   return api.get('/users/all');
 };
 
+export const getMyProfile = () => {
+  return api.get('/users/me');
+};
+
+export const updateMyProfile = (profileData) => {
+  return api.put('/users/me', profileData);
+};
+
+export const getUserProfile = (userId) => {
+  return api.get(`/users/${userId}`);
+};
+
 // Conversation APIs
 export const getMyConversations = () => {
   return api.get('/conversations/mine');

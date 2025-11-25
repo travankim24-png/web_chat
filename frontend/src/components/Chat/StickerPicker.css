@@ -1,0 +1,130 @@
+.sticker-picker-overlay {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.sticker-picker {
+  background: var(--ig-primary-background);
+  border: 1px solid var(--ig-border-color);
+  border-radius: 12px;
+  width: 360px;
+  max-height: 450px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sticker-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ig-border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sticker-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ig-primary-text);
+}
+
+.btn-close-sticker {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--ig-secondary-text);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.btn-close-sticker:hover {
+  opacity: 0.6;
+}
+
+.sticker-categories {
+  display: flex;
+  padding: 12px 16px;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--ig-border-color);
+}
+
+.sticker-categories::-webkit-scrollbar {
+  height: 4px;
+}
+
+.sticker-categories::-webkit-scrollbar-thumb {
+  background: var(--ig-border-color);
+  border-radius: 2px;
+}
+
+.category-btn {
+  padding: 6px 12px;
+  background: var(--ig-secondary-background);
+  border: 1px solid var(--ig-border-color);
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ig-secondary-text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.category-btn:hover {
+  background: var(--ig-border-color);
+}
+
+.category-btn.active {
+  background: var(--ig-blue);
+  color: white;
+  border-color: var(--ig-blue);
+}
+
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 320px;
+}
+
+.sticker-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sticker-grid::-webkit-scrollbar-thumb {
+  background: var(--ig-border-color);
+  border-radius: 3px;
+}
+
+.sticker-item {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sticker-item:hover {
+  background: var(--ig-secondary-background);
+  transform: scale(1.2);
+}
+
+.sticker-item:active {
+  transform: scale(1.1);
+}

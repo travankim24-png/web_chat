@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ConversationList from './ConversationList';
 import ChatWindow from './ChatWindow';
 import NewConversationModal from './NewConversationModal';
@@ -10,6 +11,7 @@ function ChatApp({ onLogout }) {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [showNewConvModal, setShowNewConvModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -45,6 +47,9 @@ function ChatApp({ onLogout }) {
         <div className="sidebar-header">
           <h2>Tin nhắn</h2>
           <div className="sidebar-actions">
+            <button onClick={() => navigate('/profile')} className="btn-profile" title="Hồ sơ cá nhân">
+              👤
+            </button>
             <button onClick={handleNewConversation} className="btn-new-chat" title="Tạo cuộc trò chuyện mới">
               +
             </button>

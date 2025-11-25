@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import ChatApp from './components/Chat/ChatApp';
+import Profile from './components/Profile/Profile';
+import UserProfile from './components/Profile/UserProfile';
 import './App.css';
 
 function App() {
@@ -14,6 +16,13 @@ function App() {
     if (token) {
       setIsAuthenticated(true);
     }
+    
+    // Load theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    
     setLoading(false);
   }, []);
 
@@ -58,6 +67,22 @@ function App() {
             element={
               isAuthenticated ? 
               <ChatApp onLogout={handleLogout} /> : 
+              <Navigate to="/login" />
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              isAuthenticated ? 
+              <Profile onLogout={handleLogout} /> : 
+              <Navigate to="/login" />
+            } 
+          />
+          <Route 
+            path="/profile/:userId" 
+            element={
+              isAuthenticated ? 
+              <UserProfile /> : 
               <Navigate to="/login" />
             } 
           />

@@ -37,9 +37,14 @@ class WebSocketService {
     this.listeners = this.listeners.filter(x => x !== cb);
   }
 
-  sendMessage(content, file_url = null) {
+  sendMessage(content, file_url = null, reply_to = null) {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type: "message", content, file_url }));
+      this.ws.send(JSON.stringify({ 
+        type: "message", 
+        content, 
+        file_url,
+        reply_to 
+      }));
     }
   }
 
@@ -50,13 +55,13 @@ class WebSocketService {
   }
 
   sendSeen(messageIds) {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        this.socket.send(JSON.stringify({
-            type: "seen",
-            message_ids: messageIds
-        }));
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        type: "seen",
+        message_ids: messageIds
+      }));
     }
-}
+  }
 
 }
 

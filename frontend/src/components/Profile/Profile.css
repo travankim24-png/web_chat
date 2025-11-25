@@ -1,0 +1,213 @@
+.profile-container {
+  height: 100vh;
+  background-color: var(--ig-primary-background);
+  overflow-y: auto;
+  max-width: 935px;
+  margin: 0 auto;
+  border-left: 1px solid var(--ig-border-color);
+  border-right: 1px solid var(--ig-border-color);
+}
+
+.profile-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: var(--ig-secondary-text);
+  font-size: 16px;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--ig-border-color);
+  background: var(--ig-primary-background);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.profile-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ig-primary-text);
+}
+
+.btn-back,
+.btn-logout-profile {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ig-blue);
+  transition: opacity 0.2s;
+}
+
+.btn-back:hover,
+.btn-logout-profile:hover {
+  opacity: 0.6;
+}
+
+.profile-content {
+  padding: 32px 24px;
+}
+
+.profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.profile-avatar-large {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--ig-border-color);
+  background-color: var(--ig-secondary-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.profile-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-large .avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  font-weight: 700;
+  color: var(--ig-primary-text);
+  background: var(--ig-secondary-background);
+}
+
+.btn-change-avatar {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: var(--ig-blue);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-change-avatar:hover {
+  opacity: 0.6;
+}
+
+.profile-info-section {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--ig-border-color);
+}
+
+.info-row label {
+  width: 150px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ig-primary-text);
+  padding-top: 6px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  flex: 1;
+  font-size: 14px;
+  color: var(--ig-primary-text);
+  padding-top: 6px;
+}
+
+.text-muted {
+  color: var(--ig-secondary-text);
+  font-style: italic;
+}
+
+.info-input,
+.info-textarea {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--ig-border-color);
+  border-radius: 3px;
+  font-size: 14px;
+  background-color: var(--ig-primary-background);
+  color: var(--ig-primary-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.info-input:focus,
+.info-textarea:focus {
+  outline: none;
+  border-color: var(--ig-secondary-text);
+}
+
+.info-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 32px;
+  padding-top: 16px;
+}
+
+.btn-edit,
+.btn-save {
+  padding: 7px 16px;
+  background: var(--ig-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-edit:hover,
+.btn-save:hover {
+  background: var(--ig-blue-hover);
+}
+
+.btn-save:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  padding: 7px 16px;
+  background: transparent;
+  color: var(--ig-primary-text);
+  border: 1px solid var(--ig-border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-cancel:hover {
+  opacity: 0.6;
+}
