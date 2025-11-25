@@ -8,6 +8,38 @@
   padding: 20px;
   border-bottom: 1px solid var(--ig-border-color);
   background: var(--ig-primary-background);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.chat-header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--ig-border-color);
+  position: relative;
+}
+
+.chat-header-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-header-avatar .avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
 }
 
 .chat-header-info h3 {
@@ -24,6 +56,25 @@
   font-weight: 400;
 }
 
+.btn-settings {
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.btn-settings:hover {
+  background-color: var(--ig-secondary-background);
+}
+
 .messages-container {
   flex: 1;
   overflow-y: auto;
@@ -34,15 +85,50 @@
 .message {
   margin-bottom: 15px;
   display: flex;
-  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
 }
 
 .message-sent {
-  align-items: flex-end;
+  flex-direction: row-reverse;
 }
 
 .message-received {
-  align-items: flex-start;
+  flex-direction: row;
+}
+
+.message-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--ig-border-color);
+  position: relative;
+}
+
+.message-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.message-avatar .avatar-placeholder-small {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.message-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 60%;
 }
 
 .message-sender {
@@ -54,10 +140,11 @@
 }
 
 .message-bubble {
-  max-width: 60%;
   padding: 16px 12px;
   border-radius: 22px;
   position: relative;
+  word-break: break-word;
+  margin-bottom: 12px;
 }
 
 .message-sent .message-bubble {
@@ -76,6 +163,21 @@
   white-space: pre-wrap;
   font-size: 14px;
   line-height: 18px;
+}
+
+.message-sticker {
+  font-size: 64px;
+  line-height: 1;
+  padding: 0;
+}
+
+.message-sent .message-sticker {
+  background: transparent;
+}
+
+.message-received .message-sticker {
+  background: transparent;
+  border: none;
 }
 
 .message-file a {
@@ -127,6 +229,28 @@
   opacity: 0.6;
 }
 
+.btn-sticker {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 24px;
+  transition: all 0.2s;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-sticker:hover {
+  transform: scale(1.1);
+}
+
+.btn-sticker:active {
+  transform: scale(0.95);
+}
+
 .chat-input {
   flex: 1;
   padding: 8px 16px;
@@ -163,7 +287,8 @@
 
 .msg-status {
   font-size: 11px;
-  color: #030303;
+  color: var(--ig-primary-text);
+  opacity: 0.6;
   margin-top: 3px;
   text-align: right;
 }

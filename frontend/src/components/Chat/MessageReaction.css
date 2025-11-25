@@ -1,0 +1,107 @@
+.message-reaction-wrapper {
+  position: absolute;
+  bottom: -8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.message-reaction-wrapper.left {
+  right: 8px;
+}
+
+.message-reaction-wrapper.right {
+  left: 8px;
+}
+
+.btn-add-reaction {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--ig-border-color);
+  background: var(--ig-primary-background);
+  color: var(--ig-secondary-text);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message:hover .btn-add-reaction {
+  display: flex;
+}
+
+.btn-add-reaction:hover {
+  background: var(--ig-secondary-background);
+  transform: scale(1.1);
+}
+
+.reaction-picker {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 8px;
+  background: var(--ig-primary-background);
+  border: 1px solid var(--ig-border-color);
+  border-radius: 24px;
+  padding: 6px;
+  display: flex;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.message-reaction-wrapper.left .reaction-picker {
+  right: 0;
+}
+
+.message-reaction-wrapper.right .reaction-picker {
+  left: 0;
+}
+
+.reaction-item {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reaction-item:hover {
+  background: var(--ig-secondary-background);
+  transform: scale(1.2);
+}
+
+.message-reactions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.reaction-badge {
+  background: var(--ig-primary-background);
+  border: 1px solid var(--ig-border-color);
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reaction-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}

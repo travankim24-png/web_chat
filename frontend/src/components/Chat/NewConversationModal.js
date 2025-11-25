@@ -59,6 +59,12 @@ function NewConversationModal({ onClose, onConversationCreated }) {
     }
   };
 
+  const getAvatarUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://127.0.0.1:8000${url}`;
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -100,10 +106,16 @@ function NewConversationModal({ onClose, onConversationCreated }) {
                 onClick={() => handleUserToggle(user.id)}
               >
                 <div className="user-avatar">
-                  {user.username[0].toUpperCase()}
+                  {user.avatar_url ? (
+                    <img src={getAvatarUrl(user.avatar_url)} alt="Avatar" />
+                  ) : (
+                    <div className="avatar-placeholder">
+                      {user.username[0].toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <div className="user-info">
-                  <div className="user-name">{user.username}</div>
+                  <div className="user-name">{user.display_name || user.username}</div>
                   <div className="user-email">{user.email}</div>
                 </div>
                 {selectedUsers.includes(user.id) && (

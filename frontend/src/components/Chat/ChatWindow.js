@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getMessages, uploadFile } from '../../services/api';
 import wsService from '../../services/websocket';
+import MemberListModal from './MemberListModal';
+import ChatSettings from './ChatSettings';
+import StickerPicker from './StickerPicker';
+import MessageReaction from './MessageReaction';
 import './ChatWindow.css';
 
 function ChatWindow({ conversation, currentUser }) {
@@ -8,10 +13,15 @@ function ChatWindow({ conversation, currentUser }) {
   const [inputMessage, setInputMessage] = useState('');
   const [typing, setTyping] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [showMemberList, setShowMemberList] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('default');
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const navigate = useNavigate();
 
   // -----------------------------
   // Load messages from backend
@@ -38,6 +48,7 @@ function ChatWindow({ conversation, currentUser }) {
       const ids = unseen.map(m => m.id);
       wsService.sendSeen(ids);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
   
   // -----------------------------
@@ -109,7 +120,8 @@ function ChatWindow({ conversation, currentUser }) {
       wsService.removeListener(handleWebSocketMessage);
       wsService.disconnect();
     };
-  }, [conversation?.id, currentUser?.id, loadMessages, handleWebSocketMessage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation?.id, currentUser?.id]);
 
   // -----------------------------
   // Scroll to bottom
@@ -175,6 +187,42 @@ function ChatWindow({ conversation, currentUser }) {
   };
 
   // -----------------------------
+  // Sticker selection
+  // -----------------------------
+  const handleStickerSelect = (sticker) => {
+    wsService.sendMessage(sticker);
+  };
+
+  // -----------------------------
+  // Message reaction
+  // -----------------------------
+  const handleReaction = (messageId, emoji) => {
+    console.log(`React to message ${messageId} with ${emoji}`);
+    // TODO: Send reaction via WebSocket
+    // For now, just update local state
+    setMessages(prev => prev.map(msg => {
+      if (msg.id === messageId) {
+        const reactions = msg.reactions || [];
+        const existingReaction = reactions.find(r => r.emoji === emoji);
+        
+        if (existingReaction) {
+          existingReaction.count = (existingReaction.count || 1) + 1;
+          existingReaction.users = [...(existingReaction.users || []), currentUser.username];
+        } else {
+          reactions.push({
+            emoji,
+            count: 1,
+            users: [currentUser.username]
+          });
+        }
+        
+        return { ...msg, reactions: [...reactions] };
+      }
+      return msg;
+    }));
+  };
+
+  // -----------------------------
   // Helpers for UI
   // -----------------------------
   const getConversationName = () => {
@@ -188,10 +236,46 @@ function ChatWindow({ conversation, currentUser }) {
     return m?.username || "Unknown";
   };
 
+  const getSenderAvatar = (id) => {
+    const m = conversation.members.find(m => m.id === id);
+    return m?.avatar_url || null;
+  };
+
+  const getAvatarUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `http://127.0.0.1:8000${url}`;
+  };
+
+  const handleAvatarClick = (userId) => {
+    if (userId !== currentUser.id) {
+      navigate(`/profile/${userId}`);
+    }
+  };
+
+  const handleHeaderClick = () => {
+    if (conversation.is_group) {
+      setShowMemberList(true);
+    } else {
+      const other = conversation.members.find(m => m.id !== currentUser.id);
+      if (other) {
+        navigate(`/profile/${other.id}`);
+      }
+    }
+  };
+
   const formatTime = (time) => {
     const d = new Date(time);
     return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
   };
+
+  const isSticker = (text) => {
+    // Check if message is a single emoji/sticker (1-4 characters, mostly emoji)
+    if (!text) return false;
+    const trimmed = text.trim();
+    return trimmed.length <= 4 && /[\u{1F000}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(trimmed);
+  };
+
   const renderSeenStatus = (msg) => {
     if (msg.sender_id !== currentUser.id) return null;
     if (!msg.seen_by || msg.seen_by.length === 0) return <span className="msg-status">✔ Đã gửi</span>;
@@ -202,16 +286,42 @@ function ChatWindow({ conversation, currentUser }) {
       </span>
     );
   };
+
+  // -----------------------------
+  // Chat Settings handlers
+  // -----------------------------
+  const handleUpdateNickname = (nickname) => {
+    console.log('Update nickname:', nickname);
+    // TODO: Call API to update nickname
+  };
+
+  const handleChangeTheme = (themeId) => {
+    setCurrentTheme(themeId);
+    console.log('Change theme:', themeId);
+    // TODO: Save theme preference
+  };
+
   // -----------------------------
   // UI
   // -----------------------------
   const other = conversation.members.find(m => m.id !== currentUser.id);
   const isOnline = other && onlineUsers.has(other.id);
+  const otherAvatar = other?.avatar_url;
+  
   return (
     
 
     <div className="chat-window">
-      <div className="chat-header">
+      <div className="chat-header" onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
+        <div className="chat-header-avatar">
+          {otherAvatar ? (
+            <img src={getAvatarUrl(otherAvatar)} alt="Avatar" />
+          ) : (
+            <div className="avatar-placeholder">
+              {getConversationName()[0].toUpperCase()}
+            </div>
+          )}
+        </div>
         <div className="chat-header-info">
           <h3>{getConversationName()}</h3>
           <p>
@@ -221,33 +331,71 @@ function ChatWindow({ conversation, currentUser }) {
                ? "Đang hoạt động"
                : "Không hoạt động"}
           </p>
-
         </div>
+        <button 
+          className="btn-settings" 
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowSettings(true);
+          }}
+          title="Tùy chỉnh đoạn chat"
+        >
+          ⚙️
+        </button>
       </div>
 
       <div className="messages-container">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`message ${msg.sender_id === currentUser.id ? "message-sent" : "message-received"}`}
-          >
-            {conversation.is_group && msg.sender_id !== currentUser.id && (
-              <div className="message-sender">{getSenderName(msg.sender_id)}</div>
-            )}
-
-            <div className="message-bubble">
-              {msg.file_url ? (
-                <a href={`http://127.0.0.1:8000${msg.file_url}`} target="_blank" rel="noopener noreferrer">
-                  📎 {msg.content || "File đính kèm"}
-                </a>
-              ) : (
-                <div className="message-text">{msg.content}</div>
+        {messages.map((msg) => {
+          const senderAvatar = getSenderAvatar(msg.sender_id);
+          return (
+            <div
+              key={msg.id}
+              className={`message ${msg.sender_id === currentUser.id ? "message-sent" : "message-received"}`}
+            >
+              {msg.sender_id !== currentUser.id && (
+                <div 
+                  className="message-avatar"
+                  onClick={() => handleAvatarClick(msg.sender_id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {senderAvatar ? (
+                    <img src={getAvatarUrl(senderAvatar)} alt="Avatar" />
+                  ) : (
+                    <div className="avatar-placeholder-small">
+                      {getSenderName(msg.sender_id)[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
               )}
-              <div className="message-time">{formatTime(msg.created_at)}</div>
-              {renderSeenStatus(msg)}
+              
+              <div className="message-content-wrapper">
+                {conversation.is_group && msg.sender_id !== currentUser.id && (
+                  <div className="message-sender">{getSenderName(msg.sender_id)}</div>
+                )}
+
+                <div className="message-bubble">
+                  {msg.file_url ? (
+                    <a href={`http://127.0.0.1:8000${msg.file_url}`} target="_blank" rel="noopener noreferrer">
+                      📎 {msg.content || "File đính kèm"}
+                    </a>
+                  ) : isSticker(msg.content) ? (
+                    <div className="message-sticker">{msg.content}</div>
+                  ) : (
+                    <div className="message-text">{msg.content}</div>
+                  )}
+                  <div className="message-time">{formatTime(msg.created_at)}</div>
+                  {renderSeenStatus(msg)}
+
+                  <MessageReaction 
+                    message={msg}
+                    onReact={handleReaction}
+                    position={msg.sender_id === currentUser.id ? 'left' : 'right'}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {typing && (
           <div className="typing-indicator">
@@ -269,6 +417,14 @@ function ChatWindow({ conversation, currentUser }) {
           📎
         </button>
 
+        <button 
+          className="btn-sticker" 
+          onClick={() => setShowStickerPicker(!showStickerPicker)}
+          title="Gửi sticker"
+        >
+          😀
+        </button>
+
         <input
           type="text"
           className="chat-input"
@@ -282,6 +438,31 @@ function ChatWindow({ conversation, currentUser }) {
           Gửi
         </button>
       </div>
+
+      {showMemberList && (
+        <MemberListModal
+          conversation={conversation}
+          currentUserId={currentUser.id}
+          onClose={() => setShowMemberList(false)}
+        />
+      )}
+
+      {showSettings && (
+        <ChatSettings
+          conversation={conversation}
+          currentUser={currentUser}
+          onClose={() => setShowSettings(false)}
+          onUpdateNickname={handleUpdateNickname}
+          onChangeTheme={handleChangeTheme}
+        />
+      )}
+
+      {showStickerPicker && (
+        <StickerPicker
+          onSelectSticker={handleStickerSelect}
+          onClose={() => setShowStickerPicker(false)}
+        />
+      )}
     </div>
   );
 }
