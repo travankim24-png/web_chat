@@ -69,9 +69,9 @@ class UserProfile(BaseModel):
 
 
 class UserProfileUpdate(BaseModel):
-    display_name: Optional[str]
-    bio: Optional[str]
-    phone: Optional[str]
-    address: Optional[str]
-    birthday: Optional[str]
-    avatar_url: Optional[str]
+    display_name: Optional[str] = None
+    bio: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    birthday: Optional[str] = None
+    avatar_url: Optional[str] = None

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from datetime import datetime
 from .. import db, models, auth, schemas
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -22,8 +23,10 @@ def update_me(
     db_s: Session = Depends(db.get_db),
     current_user = Depends(auth.get_current_user)
 ):
+    data = payload.dict(exclude_unset=True)
 
-    for field, value in payload.dict(exclude_unset=True).items():
+    # Vì birthday là string → không cần convert
+    for field, value in data.items():
         setattr(current_user, field, value)
 
     db_s.commit()
@@ -32,7 +35,7 @@ def update_me(
 
 
 # ---------------------------------------------------------
-# Lấy danh sách tất cả user (trừ bản thân)
+# Lấy danh sách tất cả user
 # ---------------------------------------------------------
 @router.get("/all")
 def get_all_users(
@@ -56,13 +59,8 @@ def get_all_users(
 # Lấy hồ sơ user bất kỳ
 # ---------------------------------------------------------
 @router.get("/{user_id}", response_model=schemas.UserProfile)
-def get_user_profile(
-    user_id: int,
-    db_s: Session = Depends(db.get_db),
-    current_user = Depends(auth.get_current_user)
-):
+def get_user_profile(user_id: int, db_s: Session = Depends(db.get_db)):
     user = db_s.query(models.User).filter(models.User.id == user_id).first()
     if not user:
-        return {"detail": "User not found"}
-
+        raise HTTPException(status_code=404, detail="User not found")
     return user
