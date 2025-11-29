@@ -8,18 +8,21 @@ function ConversationList({ conversations, selectedConversation, onSelectConvers
   const getConversationName = (conv) => {
     if (conv.is_group) {
       return conv.name || 'Nhóm';
-    } else {
-      const otherMember = conv.members.find(m => m.id !== currentUserId);
-      return otherMember ? otherMember.username : 'Unknown';
     }
+    const other = conv.members.find(m => m.id !== currentUserId);
+    return other?.display_name || other?.username || 'Unknown';
   };
 
   const getConversationAvatar = (conv) => {
-    if (conv.is_group) {
-      return null; // For groups, use placeholder
-    }
-    const otherMember = conv.members.find(m => m.id !== currentUserId);
-    return otherMember?.avatar_url || null;
+    // Nếu nhóm thì không dùng avatar
+    if (conv.is_group) return null;
+
+    const other = conv.members.find(m => m.id !== currentUserId);
+
+    // Nếu backend trả avatar_url => sử dụng
+    if (other?.avatar_url) return other.avatar_url;
+
+    return null;
   };
 
   const getAvatarUrl = (url) => {
@@ -31,10 +34,8 @@ function ConversationList({ conversations, selectedConversation, onSelectConvers
   const handleAvatarClick = (e, conv) => {
     e.stopPropagation();
     if (!conv.is_group) {
-      const otherMember = conv.members.find(m => m.id !== currentUserId);
-      if (otherMember) {
-        navigate(`/profile/${otherMember.id}`);
-      }
+      const other = conv.members.find(m => m.id !== currentUserId);
+      if (other) navigate(`/profile/${other.id}`);
     }
   };
 
@@ -47,13 +48,14 @@ function ConversationList({ conversations, selectedConversation, onSelectConvers
       ) : (
         conversations.map((conv) => {
           const avatarUrl = getConversationAvatar(conv);
+
           return (
             <div
               key={conv.id}
               className={`conversation-item ${selectedConversation?.id === conv.id ? 'active' : ''}`}
               onClick={() => onSelectConversation(conv)}
             >
-              <div 
+              <div
                 className="conversation-avatar"
                 onClick={(e) => handleAvatarClick(e, conv)}
                 style={{ cursor: conv.is_group ? 'default' : 'pointer' }}
@@ -66,6 +68,7 @@ function ConversationList({ conversations, selectedConversation, onSelectConvers
                   </div>
                 )}
               </div>
+
               <div className="conversation-info">
                 <div className="conversation-name">{getConversationName(conv)}</div>
                 <div className="conversation-members">
