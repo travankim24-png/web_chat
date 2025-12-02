@@ -75,3 +75,18 @@ class UserProfileUpdate(BaseModel):
     address: Optional[str] = None
     birthday: Optional[str] = None
     avatar_url: Optional[str] = None
+
+class NicknameUpdate(BaseModel):
+    conversation_id: int
+    user_id: int
+    nickname: str
+
+class ConversationMemberSchema(BaseModel):
+    user_id: int
+    username: str | None
+    display_name: str | None
+    avatar_url: str | None
+    nickname: str | None
+
+    class Config:
+        orm_mode = True

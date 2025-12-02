@@ -4,7 +4,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from . import db, models, auth
-from .routes import auth_routes, conversation_routes, file_routes, user_routes, message_routes
+from .routes import (
+    auth_routes,
+    conversation_routes,
+    file_routes,
+    user_routes,
+    message_routes,
+    settings_routes,
+    media_routes
+)
+
 from .websocket_manager import manager
 
 from starlette.concurrency import run_in_threadpool
@@ -12,6 +21,7 @@ from fastapi.openapi.utils import get_openapi
 import json
 
 app = FastAPI(title="Chat backend (FastAPI)")
+
 
 # -------------------------------------------------------------
 # CORS
@@ -23,6 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # -------------------------------------------------------------
 # Include routes
 # -------------------------------------------------------------
@@ -31,16 +42,24 @@ app.include_router(conversation_routes.router)
 app.include_router(file_routes.router)
 app.include_router(user_routes.router)
 app.include_router(message_routes.router)
+app.include_router(settings_routes.router)
+app.include_router(media_routes.router)
 
+
+# -------------------------------------------------------------
 # DB init
+# -------------------------------------------------------------
 models.Base.metadata.create_all(bind=db.engine)
 
-# Static file serving
+
+# -------------------------------------------------------------
+# Static: serve uploaded files
+# -------------------------------------------------------------
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 # -------------------------------------------------------------
-# WEBSOCKET HANDLER (PHIÊN BẢN CHUẨN)
+# WEBSOCKET ENDPOINT – ANTI CRASH VERSION
 # -------------------------------------------------------------
 @app.websocket("/ws/{conversation_id}/{user_id}")
 async def websocket_endpoint(
@@ -49,43 +68,52 @@ async def websocket_endpoint(
     user_id: int,
     token: str = Query(None)
 ):
-    # --- 1. Validate token ---
+    # 1. Validate JWT
     payload = auth.decode_access_token(token) if token else None
-
     if not payload or str(payload.get("sub")) != str(user_id):
         await websocket.close(code=1008)
         return
 
-    # --- 2. ACCEPT ---
+    # 2. Accept WS
     await websocket.accept()
 
-    # --- 3. Register vào phòng ---
+    # 3. Register connection
     await manager.connect(conversation_id, user_id, websocket)
 
-    # --- 4. Gửi danh sách online hiện tại cho user mới ---
-    await websocket.send_json({
-        "type": "online_list",
-        "users": manager.get_online_users(conversation_id)
-    })
+    # 4. Send list of online users to this user
+    try:
+        await websocket.send_json({
+            "type": "online_list",
+            "users": manager.get_online_users(conversation_id)
+        })
+    except:
+        pass  # user có thể disconnect ngay lập tức
 
-    # --- 5. Thông báo cho mọi người: user join ---
-    await manager.broadcast_to_conversation(
+    # 5. Notify everyone that this user is online
+    await manager.broadcast_safe(
         conversation_id,
-        {"type": "presence", "user_id": user_id, "status": "online"}
+        {
+            "type": "presence",
+            "user_id": user_id,
+            "status": "online"
+        },
+        exclude_user=None
     )
 
     try:
         while True:
+            # Nhận dữ liệu từ WS
             raw = await websocket.receive_text()
             payload = json.loads(raw)
 
-            # --------------------------
-            # Gửi tin nhắn
-            # --------------------------
+            # ======================================================
+            # SEND MESSAGE
+            # ======================================================
             if payload.get("type") == "message":
                 content = payload.get("content")
                 file_url = payload.get("file_url")
 
+                # save_message chạy trong threadpool
                 def save_msg():
                     db_s = next(db.get_db())
                     try:
@@ -94,8 +122,8 @@ async def websocket_endpoint(
                             db_s,
                             int(conversation_id),
                             int(user_id),
-                            content=content,
-                            file_url=file_url,
+                            content,
+                            file_url
                         )
                         return {
                             "id": msg.id,
@@ -103,30 +131,35 @@ async def websocket_endpoint(
                             "sender_id": msg.sender_id,
                             "content": msg.content,
                             "file_url": msg.file_url,
-                            "created_at": str(msg.created_at),
+                            "created_at": str(msg.created_at)
                         }
                     finally:
                         db_s.close()
 
                 saved = await run_in_threadpool(save_msg)
 
-                await manager.broadcast_to_conversation(
+                await manager.broadcast_safe(
                     conversation_id,
-                    {"type": "message", "message": saved},
+                    {"type": "message", "message": saved}
                 )
 
-            # --------------------------
-            # Typing
-            # --------------------------
+            # ======================================================
+            # TYPING
+            # ======================================================
             elif payload.get("type") == "typing":
-                await manager.broadcast_to_conversation(
+                await manager.broadcast_safe(
                     conversation_id,
-                    {"type": "typing", "user_id": user_id, "status": payload.get("status", True)},
+                    {
+                        "type": "typing",
+                        "user_id": user_id,
+                        "status": payload.get("status", True)
+                    },
+                    exclude_user=user_id
                 )
 
-            # --------------------------
-            # Seen
-            # --------------------------
+            # ======================================================
+            # SEEN
+            # ======================================================
             elif payload.get("type") == "seen":
                 message_ids = payload.get("message_ids", [])
 
@@ -137,48 +170,47 @@ async def websocket_endpoint(
                         for mid in message_ids:
                             exists = (
                                 db_s.query(MessageSeen)
-                                .filter(
-                                    MessageSeen.message_id == mid,
-                                    MessageSeen.user_id == user_id
-                                )
+                                .filter(MessageSeen.message_id == mid,
+                                        MessageSeen.user_id == user_id)
                                 .first()
                             )
                             if not exists:
-                                db_s.add(MessageSeen(message_id=mid, user_id=user_id))
+                                db_s.add(MessageSeen(
+                                    message_id=mid,
+                                    user_id=user_id
+                                ))
                         db_s.commit()
                     finally:
                         db_s.close()
 
                 await run_in_threadpool(save_seen)
 
-                await manager.broadcast_to_conversation(
+                await manager.broadcast_safe(
                     conversation_id,
                     {
                         "type": "seen",
                         "user_id": user_id,
-                        "message_ids": message_ids,
-                    },
+                        "message_ids": message_ids
+                    }
                 )
-                print("SEEN SENT WS:", user_id, message_ids)
-
-
 
     except WebSocketDisconnect:
         pass
 
     finally:
-        # --- Remove user ---
         manager.disconnect(conversation_id, user_id)
-
-        # --- Notify offline ---
-        await manager.broadcast_to_conversation(
+        await manager.broadcast_safe(
             conversation_id,
-            {"type": "presence", "user_id": user_id, "status": "offline"}
+            {
+                "type": "presence",
+                "user_id": user_id,
+                "status": "offline"
+            }
         )
 
 
 # -------------------------------------------------------------
-# Swagger JWT Bearer config
+# Swagger: add JWT bearer auth
 # -------------------------------------------------------------
 def custom_openapi():
     if app.openapi_schema:
@@ -186,7 +218,7 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="Chat backend (FastAPI)",
         version="0.1.0",
-        description="API backend for chat project with JWT authentication",
+        description="Chat backend using JWT + WebSocket",
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {

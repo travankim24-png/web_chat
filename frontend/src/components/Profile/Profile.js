@@ -97,7 +97,7 @@ function Profile({ onLogout }) {
   const getAvatarUrl = (url) => {
     if (!url) return null;
     if (url.startsWith('http')) return url;
-    return `http://127.0.0.1:8000${url}`;
+    return `http://192.168.233.56:8000${url}`;
   };
 
   if (loading) {

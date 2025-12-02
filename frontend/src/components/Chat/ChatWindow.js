@@ -225,16 +225,31 @@ function ChatWindow({ conversation, currentUser }) {
   // -----------------------------
   // Helpers for UI
   // -----------------------------
+
+  const getDisplayName = (member) => {
+    if (!member) return "Unknown";
+    return (
+      member.nickname ||
+      member.display_name ||
+      member.username ||
+      "Unknown"
+    );
+  };
+
+  
   const getConversationName = () => {
     if (conversation.is_group) return conversation.name || "Nhóm";
+  
     const other = conversation.members.find(m => m.id !== currentUser.id);
-    return other?.username || "Unknown";
+    return getDisplayName(other);
   };
+  
 
   const getSenderName = (id) => {
     const m = conversation.members.find(m => m.id === id);
-    return m?.username || "Unknown";
+    return getDisplayName(m);
   };
+  
 
   const getSenderAvatar = (id) => {
     const m = conversation.members.find(m => m.id === id);
@@ -244,7 +259,7 @@ function ChatWindow({ conversation, currentUser }) {
   const getAvatarUrl = (url) => {
     if (!url) return null;
     if (url.startsWith('http')) return url;
-    return `http://127.0.0.1:8000${url}`;
+    return `http://192.168.233.56:8000${url}`;
   };
 
   const handleAvatarClick = (userId) => {
@@ -375,7 +390,7 @@ function ChatWindow({ conversation, currentUser }) {
 
                 <div className="message-bubble">
                   {msg.file_url ? (
-                    <a href={`http://127.0.0.1:8000${msg.file_url}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`http://192.168.233.56:8000${msg.file_url}`} target="_blank" rel="noopener noreferrer">
                       📎 {msg.content || "File đính kèm"}
                     </a>
                   ) : isSticker(msg.content) ? (

@@ -7,7 +7,7 @@ class WebSocketService {
   connect(conversationId, userId, token) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) return;
 
-    const wsUrl = `ws://127.0.0.1:8000/ws/${conversationId}/${userId}?token=${token}`;
+    const wsUrl = `ws://192.168.233.56:8000/ws/${conversationId}/${userId}?token=${token}`;
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => console.log("WebSocket connected");

@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { updateNickname, changeTheme, getMedia} from '../../services/api';
 import './ChatSettings.css';
 
-function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, onChangeTheme }) {
+
+function ChatSettings({ conversation, currentUser, onClose }) {
   const [activeTab, setActiveTab] = useState('customize');
   const [nickname, setNickname] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('default');
@@ -11,47 +13,100 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
   );
 
   const themes = [
-    { id: 'default', name: 'Mặc định', primary: '#0095f6', gradient: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)' },
-    { id: 'ocean', name: 'Đại dương', primary: '#0084ff', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
-    { id: 'sunset', name: 'Hoàng hôn', primary: '#ff6b6b', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
-    { id: 'forest', name: 'Rừng xanh', primary: '#00d2ff', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
-    { id: 'galaxy', name: 'Thiên hà', primary: '#8e2de2', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
-    { id: 'fire', name: 'Lửa', primary: '#ff6b6b', gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+    { id: 'default', name: 'Mặc định', gradient: 'linear-gradient(45deg, #f09433, #bc1888)' },
+    { id: 'ocean', name: 'Đại dương', gradient: 'linear-gradient(135deg, #667eea, #764ba2)' },
+    { id: 'sunset', name: 'Hoàng hôn', gradient: 'linear-gradient(135deg, #f093fb, #f5576c)' },
+    { id: 'forest', name: 'Rừng xanh', gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
+    { id: 'galaxy', name: 'Thiên hà', gradient: 'linear-gradient(135deg, #667eea, #764ba2)' },
+    { id: 'fire', name: 'Lửa', gradient: 'linear-gradient(135deg, #fa709a, #fee140)' },
   ];
 
-  const handleSaveNickname = () => {
-    if (nickname.trim()) {
-      onUpdateNickname(nickname);
-      setNickname('');
-      alert('Đã cập nhật biệt danh!');
+  // -----------------------------------------------------
+  // CẬP NHẬT BIỆT DANH CHO CHAT 1-1
+  // -----------------------------------------------------
+  const handleSaveNickname = async () => {
+    if (!nickname.trim()) return;
+
+    try {
+      await updateNickname(conversation.id, currentUser.id, nickname);
+      alert("Đã cập nhật biệt danh!");
+
+      setNickname("");
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi cập nhật biệt danh");
     }
   };
 
+  // -----------------------------------------------------
+  // CẬP NHẬT BIỆT DANH CHO TỪNG THÀNH VIÊN TRONG GROUP
+  // -----------------------------------------------------
   const handleGroupNicknameChange = (userId, value) => {
-    setGroupNicknames(prev => ({
+    setGroupNicknames((prev) => ({
       ...prev,
       [userId]: value
     }));
   };
 
-  const handleSaveGroupNickname = (userId, username) => {
+  const handleSaveGroupNickname = async (userId, username) => {
     const nicknameValue = groupNicknames[userId];
-    if (nicknameValue && nicknameValue.trim()) {
-      console.log(`Lưu biệt danh "${nicknameValue}" cho user ${userId}`);
+    if (!nicknameValue?.trim()) return;
+
+    try {
+      await updateNickname(conversation.id, userId, nicknameValue);
       alert(`Đã lưu biệt danh "${nicknameValue}" cho ${username}!`);
-      // TODO: Call API
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi lưu biệt danh!");
     }
   };
 
-  const handleSelectTheme = (themeId) => {
+  // -----------------------------------------------------
+  // ĐỔI THEME TIN NHẮN
+  // -----------------------------------------------------
+  const handleSelectTheme = async (themeId) => {
     setSelectedTheme(themeId);
-    onChangeTheme(themeId);
+
+    try {
+      await changeTheme(conversation.id, themeId);
+      alert("Đã đổi màu tin nhắn!");
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi đổi theme");
+    }
   };
 
+  // -----------------------------------------------------
+  // MEDIA TAB
+  // -----------------------------------------------------
+
+  const [mediaImages, setMediaImages] = useState([]);
+  const [mediaFiles, setMediaFiles] = useState([]);
+
+  React.useEffect(() => {
+    if (activeTab === "media") {
+      loadMedia();
+    }
+  }, [activeTab]);
+
+  const loadMedia = async () => {
+   try {
+     const res = await getMedia(conversation.id);
+     setMediaImages(res.data.images);
+     setMediaFiles(res.data.files);
+   } catch (err) {
+     console.error(err);
+   }
+  };
+
+
+  // -----------------------------------------------------
+  // DARK MODE LOCAL ONLY
+  // -----------------------------------------------------
   const handleToggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    
+
     if (newMode) {
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('theme', 'dark');
@@ -61,7 +116,9 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
     }
   };
 
-  const otherMember = conversation.members.find(m => m.id !== currentUser.id);
+  const otherMember = conversation.members.find(
+    (m) => m.id !== currentUser.id
+  );
 
   return (
     <div className="chat-settings-overlay" onClick={onClose}>
@@ -71,20 +128,21 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
           <button className="btn-close-settings" onClick={onClose}>×</button>
         </div>
 
+        {/* --- TABS --- */}
         <div className="chat-settings-tabs">
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'customize' ? 'active' : ''}`}
             onClick={() => setActiveTab('customize')}
           >
             Tùy chỉnh
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'media' ? 'active' : ''}`}
             onClick={() => setActiveTab('media')}
           >
             Ảnh & File
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'search' ? 'active' : ''}`}
             onClick={() => setActiveTab('search')}
           >
@@ -92,28 +150,43 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
           </button>
         </div>
 
+        {/* --- CONTENT --- */}
         <div className="chat-settings-content">
+
           {activeTab === 'customize' && (
             <div className="customize-section">
+
+              {/* --- NICKNAME --- */}
               <div className="setting-group">
                 <h3>Biệt danh</h3>
+
                 {conversation.is_group ? (
                   <div className="nickname-list">
                     {conversation.members.map(member => (
                       <div key={member.id} className="nickname-item">
+
                         <div className="nickname-member-info">
                           <div className="nickname-avatar">
                             {member.avatar_url ? (
-                              <img src={member.avatar_url.startsWith('http') ? member.avatar_url : `http://127.0.0.1:8000${member.avatar_url}`} alt="" />
+                              <img
+                                src={
+                                  member.avatar_url.startsWith("http")
+                                    ? member.avatar_url
+                                    : `http://192.168.233.56:8000${member.avatar_url}`
+                                }
+                                alt=""
+                              />
                             ) : (
                               <div className="avatar-placeholder-tiny">
                                 {member.username[0].toUpperCase()}
                               </div>
                             )}
                           </div>
+
                           <span className="nickname-username">{member.username}</span>
                           {member.id === currentUser.id && <span className="badge-you">Bạn</span>}
                         </div>
+
                         <div className="nickname-input-group-inline">
                           <input
                             type="text"
@@ -122,7 +195,8 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
                             value={groupNicknames[member.id] || ''}
                             onChange={(e) => handleGroupNicknameChange(member.id, e.target.value)}
                           />
-                          <button 
+
+                          <button
                             className="btn-save-nickname-small"
                             onClick={() => handleSaveGroupNickname(member.id, member.username)}
                             disabled={!groupNicknames[member.id]?.trim()}
@@ -137,12 +211,12 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
                   <div className="nickname-input-group">
                     <input
                       type="text"
-                      placeholder={`Nhập biệt danh cho ${otherMember?.username || 'người này'}`}
+                      placeholder={`Nhập biệt danh cho ${otherMember?.username || "người này"}`}
                       value={nickname}
                       onChange={(e) => setNickname(e.target.value)}
                       className="nickname-input"
                     />
-                    <button 
+                    <button
                       className="btn-save-nickname"
                       onClick={handleSaveNickname}
                       disabled={!nickname.trim()}
@@ -153,13 +227,15 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
                 )}
               </div>
 
+              {/* --- DARK MODE --- */}
               <div className="setting-group">
                 <h3>Chủ đề</h3>
+
                 <div className="dark-mode-toggle">
                   <span>Chế độ tối</span>
                   <label className="switch">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={isDarkMode}
                       onChange={handleToggleDarkMode}
                     />
@@ -168,8 +244,10 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
                 </div>
               </div>
 
+              {/* --- THEME --- */}
               <div className="setting-group">
                 <h3>Màu tin nhắn</h3>
+
                 <div className="theme-grid">
                   {themes.map(theme => (
                     <div
@@ -177,11 +255,13 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
                       className={`theme-item ${selectedTheme === theme.id ? 'selected' : ''}`}
                       onClick={() => handleSelectTheme(theme.id)}
                     >
-                      <div 
-                        className="theme-preview" 
+                      <div
+                        className="theme-preview"
                         style={{ background: theme.gradient }}
                       ></div>
+
                       <span className="theme-name">{theme.name}</span>
+
                       {selectedTheme === theme.id && (
                         <span className="theme-check">✓</span>
                       )}
@@ -189,46 +269,71 @@ function ChatSettings({ conversation, currentUser, onClose, onUpdateNickname, on
                   ))}
                 </div>
               </div>
+
             </div>
           )}
 
+          {/* OTHER TABS */}
           {activeTab === 'media' && (
-            <div className="media-section">
-              <h3>Ảnh & Video đã chia sẻ</h3>
-              <div className="media-grid">
-                <div className="media-placeholder">
-                  <span>📷</span>
-                  <p>Chưa có ảnh nào được chia sẻ</p>
-                </div>
-              </div>
-              <h3 style={{ marginTop: '24px' }}>File đã chia sẻ</h3>
-              <div className="file-list">
-                <div className="file-placeholder">
-                  <span>📎</span>
-                  <p>Chưa có file nào được chia sẻ</p>
-                </div>
-              </div>
+  <div className="media-section">
+
+    <h3>Ảnh & Video đã chia sẻ</h3>
+    <div className="media-grid">
+      {mediaImages.length === 0 ? (
+        <div className="media-placeholder">
+          <span>📷</span>
+          <p>Chưa có ảnh nào được chia sẻ</p>
+        </div>
+      ) : (
+        mediaImages.map(img => (
+          <div key={img.id} className="media-item">
+            <img
+              src={img.url.startsWith("http") ? img.url : `http://192.168.233.56:8000${img.url}`}
+              alt=""
+              onClick={() => window.open(img.url.startsWith("http") ? img.url : `http://192.168.233.56:8000${img.url}`)}
+            />
+          </div>
+        ))
+      )}
+    </div>
+
+    <h3 style={{ marginTop: "24px" }}>File đã chia sẻ</h3>
+    <div className="file-list">
+      {mediaFiles.length === 0 ? (
+        <div className="file-placeholder">
+          <span>📎</span>
+          <p>Chưa có file nào được chia sẻ</p>
+        </div>
+      ) : (
+        mediaFiles.map(file => (
+          <div key={file.id} className="file-item">
+            <div className="file-icon">📄</div>
+            <div className="file-info">
+              <span className="filename">{file.filename}</span>
+              <a
+                href={file.url.startsWith("http") ? file.url : `http://192.168.233.56:8000${file.url}`}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-download"
+              >
+                Tải xuống
+              </a>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+
+  </div>
+)}
+
+
+          {activeTab === "search" && (
+            <div className="search-section">
+              <p>Coming soon...</p>
             </div>
           )}
 
-          {activeTab === 'search' && (
-            <div className="search-section">
-              <div className="search-input-wrapper">
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm tin nhắn..."
-                  className="search-messages-input"
-                />
-                <button className="btn-search">🔍</button>
-              </div>
-              <div className="search-results">
-                <div className="search-placeholder">
-                  <span>🔍</span>
-                  <p>Nhập từ khóa để tìm kiếm tin nhắn</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

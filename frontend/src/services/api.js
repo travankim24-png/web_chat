@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'http://192.168.233.56:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -73,5 +73,37 @@ export const uploadFile = (file) => {
     },
   });
 };
+
+//settings APIs
+export const updateNickname = (conversationId, userId, nickname) => {
+  return api.put(`/settings/nickname`, {
+    conversation_id: conversationId,
+    user_id: userId,
+    nickname: nickname
+  });
+};
+
+export const changeTheme = (conversationId, themeId) => {
+  return api.put(`/settings/theme`, {
+    conversation_id: conversationId,
+    theme: themeId
+  });
+};
+
+export const leaveGroup = (conversationId) => {
+  return api.post(`/settings/leave`, {
+    conversation_id: conversationId
+  });
+};
+
+export const deleteConversation = (conversationId) => {
+  return api.delete(`/settings/${conversationId}`);
+};
+
+//media APIs
+export const getMedia = (conversationId) => {
+  return api.get(`/media/${conversationId}`);
+};
+
 
 export default api;

@@ -85,3 +85,15 @@
   text-overflow: ellipsis;
   font-weight: 400;
 }
+
+.search-box {
+  padding: 10px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+}
