@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getApiBase } from "../../config";
 import "./ConversationList.css";
 
 function ConversationList({
@@ -43,11 +44,19 @@ function ConversationList({
     return other.avatar_url || null;
   };
 
-  const getAvatarUrl = (url) => {
-    if (!url) return null;
+  // -----------------------------
+  // URL động từ backend (fix IP cứng)
+  // -----------------------------
+  const buildUrl = (url) => {
+    if (!url) return "";
     if (url.startsWith("http")) return url;
-    return `http://192.168.233.56:8000${url}`;
+  
+    const apiBase = getApiBase();   // 🔥 lấy runtime value
+    return `${apiBase}${url}`;
   };
+  
+
+  const getAvatarUrl = (url) => buildUrl(url);
 
   const handleAvatarClick = (e, conv) => {
     e.stopPropagation();

@@ -1,3 +1,5 @@
+import { getWsBase } from "../config";   // ✅ đúng
+
 class WebSocketService {
   constructor() {
     this.ws = null;
@@ -7,7 +9,11 @@ class WebSocketService {
   connect(conversationId, userId, token) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) return;
 
-    const wsUrl = `ws://192.168.233.56:8000/ws/${conversationId}/${userId}?token=${token}`;
+    const wsBase = getWsBase();   // 🔥 luôn lấy giá trị mới nhất
+    const wsUrl = `${wsBase}/${conversationId}/${userId}?token=${token}`;
+
+    console.log("Connecting WebSocket:", wsUrl);
+
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => console.log("WebSocket connected");
@@ -39,11 +45,11 @@ class WebSocketService {
 
   sendMessage(content, file_url = null, reply_to = null) {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ 
-        type: "message", 
-        content, 
+      this.ws.send(JSON.stringify({
+        type: "message",
+        content,
         file_url,
-        reply_to 
+        reply_to
       }));
     }
   }
@@ -55,12 +61,22 @@ class WebSocketService {
   }
 
   sendSeen(messageIds) {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+    if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({
         type: "seen",
         message_ids: messageIds
       }));
     }
+  }
+  
+  sendReaction(messageId, emoji) {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        type: "reaction",
+        message_id: messageId,
+        emoji
+      }));
+      }
   }
 
 }

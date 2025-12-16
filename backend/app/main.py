@@ -1,5 +1,5 @@
 # app/main.py
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -19,6 +19,7 @@ from .websocket_manager import manager
 from starlette.concurrency import run_in_threadpool
 from fastapi.openapi.utils import get_openapi
 import json
+import socket
 
 app = FastAPI(title="Chat backend (FastAPI)")
 
@@ -56,6 +57,32 @@ models.Base.metadata.create_all(bind=db.engine)
 # Static: serve uploaded files
 # -------------------------------------------------------------
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# -------------------------------------------------------------
+# Lấy địa chỉ IP của máy chủ
+# -------------------------------------------------------------
+def get_local_ip():
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.settimeout(0.5)   # tránh treo nếu mạng lag
+        s.connect(("8.8.8.8", 80))   # Google DNS để lấy IP LAN thật
+        return s.getsockname()[0]
+    except:
+        return "127.0.0.1"
+    finally:
+        s.close()
+
+
+@app.get("/server-info")
+def server_info(request: Request):
+
+    backend_ip = get_local_ip()
+
+    return {
+        "backend_ip": backend_ip,
+        "backend_port": 8000
+    }
 
 
 # -------------------------------------------------------------
@@ -193,6 +220,34 @@ async def websocket_endpoint(
                         "message_ids": message_ids
                     }
                 )
+            # ======================================================
+            # MESSAGE REACTION
+            # ======================================================
+            elif payload.get("type") == "reaction":
+                message_id = payload.get("message_id")
+                emoji = payload.get("emoji")
+
+                def save_reaction():
+                    db_s = next(db.get_db())
+                    try:
+                        from .crud import add_or_update_reaction, get_message_reactions
+                        add_or_update_reaction(db_s, message_id, user_id, emoji)
+                        reactions = get_message_reactions(db_s, message_id)
+                        return reactions
+                    finally:
+                        db_s.close()
+
+                reactions = await run_in_threadpool(save_reaction)
+
+                await manager.broadcast_safe(
+                    conversation_id,
+                    {
+                        "type": "reaction_changed",
+                        "message_id": message_id,
+                        "reactions": reactions
+                    }
+                )
+
 
     except WebSocketDisconnect:
         pass

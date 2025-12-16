@@ -6,6 +6,7 @@ import MemberListModal from './MemberListModal';
 import ChatSettings from './ChatSettings';
 import StickerPicker from './StickerPicker';
 import MessageReaction from './MessageReaction';
+import { getApiBase } from "../../config";
 import './ChatWindow.css';
 
 function ChatWindow({ conversation, currentUser }) {
@@ -22,6 +23,16 @@ function ChatWindow({ conversation, currentUser }) {
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
+
+  // Load theme từ conversation (nếu có)
+  useEffect(() => {
+    if (conversation?.theme) {
+      setCurrentTheme(conversation.theme);
+    } else {
+      setCurrentTheme("default");
+    }
+  }, [conversation]);
+
 
   // -----------------------------
   // Load messages from backend
@@ -91,6 +102,22 @@ function ChatWindow({ conversation, currentUser }) {
         }
       }
 
+      else if (data.type === "theme_changed") {
+        if (data.conversation_id === conversation.id) {
+          setCurrentTheme(data.theme);
+        }
+      }
+      
+      else if (data.type === "reaction_changed") {
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === data.message_id
+              ? { ...msg, reactions: data.reactions }
+              : msg
+          )
+        );
+      }
+      
       else if (data.type === "presence") {
         setOnlineUsers((prev) => {
           const newSet = new Set(prev);
@@ -187,6 +214,20 @@ function ChatWindow({ conversation, currentUser }) {
   };
 
   // -----------------------------
+  // URL động từ backend (fix IP cứng)
+  // -----------------------------
+  const buildUrl = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+  
+    const apiBase = getApiBase();   // 🔥 lấy runtime value
+    return `${apiBase}${url}`;
+  };
+  
+
+  const getAvatarUrl = (url) => buildUrl(url);
+
+  // -----------------------------
   // Sticker selection
   // -----------------------------
   const handleStickerSelect = (sticker) => {
@@ -197,30 +238,9 @@ function ChatWindow({ conversation, currentUser }) {
   // Message reaction
   // -----------------------------
   const handleReaction = (messageId, emoji) => {
-    console.log(`React to message ${messageId} with ${emoji}`);
-    // TODO: Send reaction via WebSocket
-    // For now, just update local state
-    setMessages(prev => prev.map(msg => {
-      if (msg.id === messageId) {
-        const reactions = msg.reactions || [];
-        const existingReaction = reactions.find(r => r.emoji === emoji);
-        
-        if (existingReaction) {
-          existingReaction.count = (existingReaction.count || 1) + 1;
-          existingReaction.users = [...(existingReaction.users || []), currentUser.username];
-        } else {
-          reactions.push({
-            emoji,
-            count: 1,
-            users: [currentUser.username]
-          });
-        }
-        
-        return { ...msg, reactions: [...reactions] };
-      }
-      return msg;
-    }));
+    wsService.sendReaction(messageId, emoji);
   };
+   
 
   // -----------------------------
   // Helpers for UI
@@ -254,12 +274,6 @@ function ChatWindow({ conversation, currentUser }) {
   const getSenderAvatar = (id) => {
     const m = conversation.members.find(m => m.id === id);
     return m?.avatar_url || null;
-  };
-
-  const getAvatarUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http')) return url;
-    return `http://192.168.233.56:8000${url}`;
   };
 
   const handleAvatarClick = (userId) => {
@@ -312,9 +326,10 @@ function ChatWindow({ conversation, currentUser }) {
 
   const handleChangeTheme = (themeId) => {
     setCurrentTheme(themeId);
-    console.log('Change theme:', themeId);
-    // TODO: Save theme preference
+    console.log("Theme changed:", themeId);
   };
+  
+  
 
   // -----------------------------
   // UI
@@ -326,7 +341,7 @@ function ChatWindow({ conversation, currentUser }) {
   return (
     
 
-    <div className="chat-window">
+    <div className={`chat-window theme-${currentTheme}`}>
       <div className="chat-header" onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
         <div className="chat-header-avatar">
           {otherAvatar ? (
@@ -390,7 +405,7 @@ function ChatWindow({ conversation, currentUser }) {
 
                 <div className="message-bubble">
                   {msg.file_url ? (
-                    <a href={`http://192.168.233.56:8000${msg.file_url}`} target="_blank" rel="noopener noreferrer">
+                    <a href={buildUrl(msg.file_url)} target="_blank" rel="noopener noreferrer">
                       📎 {msg.content || "File đính kèm"}
                     </a>
                   ) : isSticker(msg.content) ? (

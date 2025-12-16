@@ -1,8 +1,8 @@
 # settings_routes.py
 from fastapi import APIRouter, Depends, UploadFile, HTTPException
 from sqlalchemy.orm import Session
-from app import db, auth, crud
-from app.schemas import UserProfileUpdate, NicknameUpdate
+from app import db, auth, crud, models
+from app.schemas import UserProfileUpdate, NicknameUpdate, ThemeUpdate
 import os
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
@@ -136,3 +136,33 @@ def delete_conversation(
         raise HTTPException(status_code=404, detail="Không tìm thấy hội thoại")
 
     return {"message": "Xóa hội thoại thành công"}
+
+@router.put("/theme")
+def set_theme(
+    data: ThemeUpdate,
+    db_s: Session = Depends(db.get_db),
+    current_user=Depends(auth.get_current_user)
+):
+    conv = db_s.query(models.Conversation).filter(
+        models.Conversation.id == data.conversation_id
+    ).first()
+
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    member = db_s.query(models.ConversationMember).filter(
+        models.ConversationMember.conversation_id == data.conversation_id,
+        models.ConversationMember.user_id == current_user.id
+    ).first()
+
+    if not member:
+        raise HTTPException(status_code=403, detail="Bạn không thuộc nhóm này")
+
+    conv.theme = data.theme
+    db_s.commit()
+    db_s.refresh(conv)
+
+    return {
+        "message": "Theme updated",
+        "theme": data.theme
+    }

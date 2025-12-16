@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .db import Base
@@ -42,6 +42,7 @@ class Conversation(Base):
     messages = relationship("Message", back_populates="conversation")
 
     media_items = relationship("Media", back_populates="conversation")
+    theme = Column(String, default="default")
 
 
 # ============================================================
@@ -111,3 +112,20 @@ class Media(Base):
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
     conversation = relationship("Conversation", back_populates="media_items")
+
+# ============================================================
+# MESSAGE REACTION
+# ============================================================
+
+class MessageReaction(Base):
+    __tablename__ = "message_reactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    message_id = Column(Integer, ForeignKey("messages.id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    emoji = Column(String(10))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("message_id", "user_id", name="unique_user_reaction"),
+    )

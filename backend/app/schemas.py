@@ -90,3 +90,7 @@ class ConversationMemberSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class ThemeUpdate(BaseModel):
+    conversation_id: int
+    theme: str

@@ -5,24 +5,32 @@ import Register from './components/Auth/Register';
 import ChatApp from './components/Chat/ChatApp';
 import Profile from './components/Profile/Profile';
 import UserProfile from './components/Profile/UserProfile';
+import { loadBackendConfig } from "./config";  // 🔥 Thêm dòng này
 import './App.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [configLoaded, setConfigLoaded] = useState(false); // 🔥 Thêm state
 
   useEffect(() => {
+    // 1. Load IP backend trước khi chạy app
+    loadBackendConfig().then(() => {
+      setConfigLoaded(true);
+    });
+
+    // 2. Kiểm tra token
     const token = localStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
     }
-    
-    // Load theme preference
+
+    // 3. Load theme
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
     }
-    
+
     setLoading(false);
   }, []);
 
@@ -38,7 +46,8 @@ function App() {
     setIsAuthenticated(false);
   };
 
-  if (loading) {
+  // CHỜ: backend config + theme load xong
+  if (loading || !configLoaded) {
     return <div>Loading...</div>;
   }
 

@@ -222,3 +222,50 @@ def get_media(db: Session, conversation_id: int):
     ).all()
 
     return {"images": images, "files": files}
+
+# ============================================================
+# MESSAGE REACTION
+# ============================================================
+def add_or_update_reaction(db, message_id, user_id, emoji):
+    from .models import MessageReaction
+
+    reaction = db.query(MessageReaction).filter(
+        MessageReaction.message_id == message_id,
+        MessageReaction.user_id == user_id
+    ).first()
+
+    if reaction:
+        reaction.emoji = emoji
+    else:
+        reaction = MessageReaction(
+            message_id=message_id,
+            user_id=user_id,
+            emoji=emoji
+        )
+        db.add(reaction)
+
+    db.commit()
+    db.refresh(reaction)
+    return reaction
+
+def get_message_reactions(db: Session, message_id: int):
+    from .models import MessageReaction, User
+    rows = (
+        db.query(MessageReaction.emoji, User.username)
+        .join(User, User.id == MessageReaction.user_id)
+        .filter(MessageReaction.message_id == message_id)
+        .all()
+    )
+
+    result = {}
+    for emoji, username in rows:
+        if emoji not in result:
+            result[emoji] = {
+                "emoji": emoji,
+                "count": 0,
+                "users": []
+            }
+        result[emoji]["count"] += 1
+        result[emoji]["users"].append(username)
+
+    return list(result.values())

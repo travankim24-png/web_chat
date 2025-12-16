@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllUsers, createConversation } from '../../services/api';
+import { getApiBase } from "../../config";
 import './NewConversationModal.css';
 
 function NewConversationModal({ onClose, onConversationCreated }) {
@@ -59,11 +60,19 @@ function NewConversationModal({ onClose, onConversationCreated }) {
     }
   };
 
-  const getAvatarUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http')) return url;
-    return `http://192.168.233.56:8000${url}`;
+  // -----------------------------
+  // URL động từ backend (fix IP cứng)
+  // -----------------------------
+  const buildUrl = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+  
+    const apiBase = getApiBase();   // 🔥 lấy runtime value
+    return `${apiBase}${url}`;
   };
+  
+
+  const getAvatarUrl = (url) => buildUrl(url);
 
   return (
     <div className="modal-overlay" onClick={onClose}>

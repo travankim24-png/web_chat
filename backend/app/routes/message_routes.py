@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import db, crud, schemas, auth, models
+from ..crud import get_message_reactions
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
@@ -68,6 +69,7 @@ def get_messages(
             "content": msg.content,
             "file_url": msg.file_url,
             "created_at": msg.created_at,
+            "reactions": get_message_reactions(db_s, msg.id),
             "seen_by": [{"user_id": s.user_id, "seen_at": s.seen_at} for s in seen]
         })
 

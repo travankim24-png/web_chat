@@ -45,6 +45,7 @@ def my_convs(
             "id": c.id,
             "name": c.name,
             "is_group": c.is_group,
+            "theme": c.theme,
             "members": members
         })
 

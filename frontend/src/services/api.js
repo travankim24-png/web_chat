@@ -1,109 +1,111 @@
-import axios from 'axios';
+import axios from "axios";
+import { getApiBase } from "../config";   // ✅ đúng
 
-const API_BASE_URL = 'http://192.168.233.56:8000';
+// ⚠️ KHÔNG set baseURL cứng ở đây
+const api = axios.create();
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-});
-
-// Add token to requests
+// Attach token vào mọi request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
+
+  // 🔥 set baseURL mỗi request (luôn là IP mới nhất)
+  config.baseURL = getApiBase();
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Auth APIs
+
+// -------------------------------
+// AUTH APIs
+// -------------------------------
 export const register = (username, email, password) => {
-  return api.post('/auth/register', { username, email, password });
+  return api.post("/auth/register", { username, email, password });
 };
 
 export const login = (username, password) => {
-  return api.post('/auth/login', { username, password });
+  return api.post("/auth/login", { username, password });
 };
 
-// User APIs
-export const getCurrentUser = () => {
-  return api.get('/auth/me');   // FIXED
-};
+export const getCurrentUser = () => api.get("/auth/me");
 
-export const getAllUsers = () => {
-  return api.get('/users/all');
-};
 
-export const getMyProfile = () => {
-  return api.get('/users/me');
-};
+// -------------------------------
+// USER APIs
+// -------------------------------
+export const getAllUsers = () => api.get("/users/all");
 
-export const updateMyProfile = (profileData) => {
-  return api.put('/users/me', profileData);
-};
+export const getMyProfile = () => api.get("/users/me");
 
-export const getUserProfile = (userId) => {
-  return api.get(`/users/${userId}`);
-};
+export const updateMyProfile = (profileData) =>
+  api.put("/users/me", profileData);
 
-// Conversation APIs
-export const getMyConversations = () => {
-  return api.get('/conversations/mine');
-};
+export const getUserProfile = (userId) => api.get(`/users/${userId}`);
 
-export const createConversation = (name, is_group, member_ids) => {
-  return api.post('/conversations/', { name, is_group, member_ids });
-};
 
-// Message APIs
-export const getMessages = (conversationId) => {
-  return api.get(`/messages/${conversationId}`);
-};
+// -------------------------------
+// CONVERSATION APIs
+// -------------------------------
+export const getMyConversations = () => api.get("/conversations/mine");
 
-export const sendMessage = (conversation_id, content, file_url = null) => {
-  return api.post('/messages/', { conversation_id, content, file_url }); // FIXED
-};
+export const createConversation = (name, is_group, member_ids) =>
+  api.post("/conversations/", { name, is_group, member_ids });
 
-// File APIs
+
+// -------------------------------
+// MESSAGE APIs
+// -------------------------------
+export const getMessages = (conversationId) =>
+  api.get(`/messages/${conversationId}`);
+
+export const sendMessage = (conversation_id, content, file_url = null) =>
+  api.post("/messages/", { conversation_id, content, file_url });
+
+
+// -------------------------------
+// FILE APIs
+// -------------------------------
 export const uploadFile = (file) => {
   const formData = new FormData();
-  formData.append('file', file);
-  return api.post('/files/upload', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+  formData.append("file", file);
+
+  return api.post("/files/upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
 };
 
-//settings APIs
-export const updateNickname = (conversationId, userId, nickname) => {
-  return api.put(`/settings/nickname`, {
+
+// -------------------------------
+// SETTINGS APIs
+// -------------------------------
+export const updateNickname = (conversationId, userId, nickname) =>
+  api.put(`/settings/nickname`, {
     conversation_id: conversationId,
     user_id: userId,
-    nickname: nickname
+    nickname: nickname,
   });
-};
 
-export const changeTheme = (conversationId, themeId) => {
-  return api.put(`/settings/theme`, {
+export const changeTheme = (conversationId, themeId) =>
+  api.put(`/settings/theme`, {
     conversation_id: conversationId,
-    theme: themeId
+    theme: themeId,
   });
-};
 
-export const leaveGroup = (conversationId) => {
-  return api.post(`/settings/leave`, {
-    conversation_id: conversationId
+export const leaveGroup = (conversationId) =>
+  api.post(`/settings/leave`, {
+    conversation_id: conversationId,
   });
-};
 
-export const deleteConversation = (conversationId) => {
-  return api.delete(`/settings/${conversationId}`);
-};
+export const deleteConversation = (conversationId) =>
+  api.delete(`/settings/${conversationId}`);
 
-//media APIs
-export const getMedia = (conversationId) => {
-  return api.get(`/media/${conversationId}`);
-};
 
+// -------------------------------
+// MEDIA APIs
+// -------------------------------
+export const getMedia = (conversationId) =>
+  api.get(`/media/${conversationId}`);
 
 export default api;

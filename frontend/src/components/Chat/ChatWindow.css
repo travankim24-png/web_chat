@@ -292,3 +292,121 @@
   margin-top: 3px;
   text-align: right;
 }
+
+/* ===============================
+   THEMES – FIX CHUẨN
+================================ */
+
+/* Default */
+.theme-default .message-sent .message-bubble {
+  background: var(--ig-blue);
+  color: #fff;
+}
+
+.theme-default .message-received .message-bubble {
+  background: var(--ig-border-color);
+  color: var(--ig-primary-text);
+}
+
+/* Blue */
+.theme-blue .message-sent .message-bubble {
+  background: #007bff;
+  color: #fff;
+}
+
+.theme-blue .message-received .message-bubble {
+  background: #e8f1ff;
+  color: #000;
+}
+
+/* Pink */
+.theme-pink .message-sent .message-bubble {
+  background: #ff66b2;
+  color: #fff;
+}
+
+.theme-pink .message-received .message-bubble {
+  background: #ffe6f3;
+  color: #000;
+}
+
+
+/* Pink theme */
+.theme-pink .message-bubble.message-sent {
+  background: #ff66b2;
+  color: white;
+}
+.theme-pink .message-bubble.message-received {
+  background: #ffe6f3;
+}
+
+/* ===============================
+   THEMES – MATCH CHAT SETTINGS
+================================ */
+
+/* DEFAULT */
+.theme-default .message-sent .message-bubble {
+  background: #0084ff;
+  color: #fff;
+}
+
+.theme-default .message-received .message-bubble {
+  background: #e4e6eb;
+  color: #000;
+}
+
+/* OCEAN */
+.theme-ocean .message-sent .message-bubble {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+}
+
+.theme-ocean .message-received .message-bubble {
+  background: #eef2ff;
+  color: #000;
+}
+
+/* SUNSET */
+.theme-sunset .message-sent .message-bubble {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: #fff;
+}
+
+.theme-sunset .message-received .message-bubble {
+  background: #ffe4ec;
+  color: #000;
+}
+
+/* FOREST */
+.theme-forest .message-sent .message-bubble {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: #fff;
+}
+
+.theme-forest .message-received .message-bubble {
+  background: #e6fff3;
+  color: #000;
+}
+
+/* GALAXY */
+.theme-galaxy .message-sent .message-bubble {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+}
+
+.theme-galaxy .message-received .message-bubble {
+  background: #f0f2ff;
+  color: #000;
+}
+
+/* FIRE */
+.theme-fire .message-sent .message-bubble {
+  background: linear-gradient(135deg, #fa709a, #fee140);
+  color: #000;
+}
+
+.theme-fire .message-received .message-bubble {
+  background: #fff3e0;
+  color: #000;
+}
+

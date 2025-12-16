@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyProfile, updateMyProfile, uploadFile } from '../../services/api';
+import { getApiBase } from "../../config";
 import './Profile.css';
 
 function Profile({ onLogout }) {
@@ -94,11 +95,14 @@ function Profile({ onLogout }) {
     setIsEditing(false);
   };
 
-  const getAvatarUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http')) return url;
-    return `http://192.168.233.56:8000${url}`;
-  };
+  const buildUrl = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+  
+    const apiBase = getApiBase();   // 🔥 lấy runtime value
+    return `${apiBase}${url}`;
+  }; 
+  
 
   if (loading) {
     return (
@@ -124,7 +128,7 @@ function Profile({ onLogout }) {
         <div className="profile-avatar-section">
           <div className="profile-avatar-large">
             {formData.avatar_url ? (
-              <img src={getAvatarUrl(formData.avatar_url)} alt="Avatar" />
+              <img src={buildUrl(formData.avatar_url)} alt="Avatar" />
             ) : (
               <div className="avatar-placeholder">
                 {profile?.username?.[0]?.toUpperCase() || '?'}

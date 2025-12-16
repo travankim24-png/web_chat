@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getUserProfile } from '../../services/api';
+import { getApiBase } from "../../config";
 import './Profile.css';
 
 function UserProfile() {
@@ -26,11 +27,14 @@ function UserProfile() {
     }
   };
 
-  const getAvatarUrl = (url) => {
-    if (!url) return null;
-    if (url.startsWith('http')) return url;
-    return `http://192.168.233.56:8000${url}`;
-  };
+  const buildUrl = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+  
+    const apiBase = getApiBase();   // 🔥 lấy runtime value
+    return `${apiBase}${url}`;
+  }; 
+  
 
   if (loading) {
     return (
@@ -62,7 +66,7 @@ function UserProfile() {
         <div className="profile-avatar-section">
           <div className="profile-avatar-large">
             {profile.avatar_url ? (
-              <img src={getAvatarUrl(profile.avatar_url)} alt="Avatar" />
+              <img src={buildUrl(profile.avatar_url)} alt="Avatar" />
             ) : (
               <div className="avatar-placeholder">
                 {profile.username?.[0]?.toUpperCase() || '?'}
