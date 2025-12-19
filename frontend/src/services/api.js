@@ -63,6 +63,11 @@ export const getMessages = (conversationId) =>
 export const sendMessage = (conversation_id, content, file_url = null) =>
   api.post("/messages/", { conversation_id, content, file_url });
 
+export const searchMessages = (conversationId, query) =>
+  api.get(`/messages/${conversationId}/search`, {
+    params: { q: query }
+  });
+
 
 // -------------------------------
 // FILE APIs

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from .. import db, crud, schemas, auth, models
 from ..crud import get_message_reactions
@@ -71,6 +71,57 @@ def get_messages(
             "created_at": msg.created_at,
             "reactions": get_message_reactions(db_s, msg.id),
             "seen_by": [{"user_id": s.user_id, "seen_at": s.seen_at} for s in seen]
+        })
+
+    return result
+
+
+@router.get("/{conversation_id}/search")
+def search_messages(
+    conversation_id: int,
+    q: str = Query(..., min_length=1, description="Search query"),
+    db_s: Session = Depends(db.get_db),
+    current_user = Depends(auth.get_current_user)
+):
+    """Search messages in a conversation by content"""
+    # Check if conversation exists
+    conv = (
+        db_s.query(models.Conversation)
+        .filter(models.Conversation.id == conversation_id)
+        .first()
+    )
+    if not conv:
+        raise HTTPException(status_code=404, detail=f"Conversation {conversation_id} not found")
+
+    # Check if user is a member
+    member_ids = [m.user_id for m in conv.members]
+    if current_user.id not in member_ids:
+        raise HTTPException(status_code=403, detail="You are not a member of this conversation")
+
+    # Search messages
+    messages = (
+        db_s.query(models.Message)
+        .filter(
+            models.Message.conversation_id == conversation_id,
+            models.Message.content.ilike(f"%{q}%")
+        )
+        .order_by(models.Message.created_at.desc())
+        .all()
+    )
+
+    result = []
+    for msg in messages:
+        # Get sender info
+        sender = db_s.query(models.User).filter(models.User.id == msg.sender_id).first()
+        
+        result.append({
+            "id": msg.id,
+            "conversation_id": msg.conversation_id,
+            "sender_id": msg.sender_id,
+            "sender_name": sender.username if sender else "Unknown",
+            "content": msg.content,
+            "file_url": msg.file_url,
+            "created_at": msg.created_at
         })
 
     return result

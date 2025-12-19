@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { updateNickname, changeTheme, getMedia } from '../../services/api';
+import { updateNickname, changeTheme, getMedia, searchMessages } from '../../services/api';
 import { getApiBase } from "../../config";   // ✔ THÊM DÒNG NÀY
 import './ChatSettings.css';
 
@@ -10,6 +10,11 @@ function ChatSettings({ conversation, currentUser, onClose, onChangeTheme }) {
   const [groupNicknames, setGroupNicknames] = useState({});
   const [mediaImages, setMediaImages] = useState([]);
   const [mediaFiles, setMediaFiles] = useState([]);
+  
+  // Search states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const [isDarkMode, setIsDarkMode] = useState(
     document.documentElement.getAttribute('data-theme') === 'dark'
@@ -101,6 +106,50 @@ function ChatSettings({ conversation, currentUser, onClose, onChangeTheme }) {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // SEARCH MESSAGES
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const res = await searchMessages(conversation.id, searchQuery);
+      setSearchResults(res.data);
+    } catch (err) {
+      console.error('Search error:', err);
+      alert('Lỗi khi tìm kiếm tin nhắn');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now - date) / (1000 * 60 * 60);
+
+    if (diffInHours < 24) {
+      return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    } else if (diffInHours < 48) {
+      return 'Hôm qua ' + date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    } else {
+      return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+  };
+
+  const highlightText = (text, query) => {
+    if (!query.trim()) return text;
+    
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return parts.map((part, i) => 
+      part.toLowerCase() === query.toLowerCase() ? 
+        <mark key={i}>{part}</mark> : part
+    );
   };
 
   // DARK MODE
@@ -332,7 +381,71 @@ function ChatSettings({ conversation, currentUser, onClose, onChangeTheme }) {
           {/* SEARCH TAB */}
           {activeTab === "search" && (
             <div className="search-section">
-              <p>Coming soon...</p>
+              <form onSubmit={handleSearch} className="search-form">
+                <div className="search-input-group">
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm tin nhắn..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="search-input"
+                  />
+                  <button 
+                    type="submit" 
+                    className="btn-search"
+                    disabled={isSearching || !searchQuery.trim()}
+                  >
+                    {isSearching ? '🔄' : '🔍'}
+                  </button>
+                </div>
+              </form>
+
+              <div className="search-results">
+                {isSearching ? (
+                  <div className="search-loading">
+                    <p>Đang tìm kiếm...</p>
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  <>
+                    <div className="search-results-header">
+                      <span>Tìm thấy {searchResults.length} kết quả</span>
+                    </div>
+                    <div className="search-results-list">
+                      {searchResults.map((msg) => (
+                        <div key={msg.id} className="search-result-item">
+                          <div className="search-result-header">
+                            <span className="search-result-sender">
+                              {msg.sender_name}
+                              {msg.sender_id === currentUser.id && ' (Bạn)'}
+                            </span>
+                            <span className="search-result-time">
+                              {formatDate(msg.created_at)}
+                            </span>
+                          </div>
+                          <div className="search-result-content">
+                            {highlightText(msg.content, searchQuery)}
+                          </div>
+                          {msg.file_url && (
+                            <div className="search-result-file">
+                              📎 File đính kèm
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : searchQuery ? (
+                  <div className="search-empty">
+                    <span>🔍</span>
+                    <p>Không tìm thấy kết quả phù hợp</p>
+                  </div>
+                ) : (
+                  <div className="search-placeholder">
+                    <span>🔍</span>
+                    <p>Nhập từ khóa để tìm kiếm tin nhắn</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
