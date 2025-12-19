@@ -534,3 +534,167 @@ input:checked + .slider:before {
 .btn-download:hover {
   opacity: 0.8;
 }
+
+/* Search Section */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.search-form {
+  position: sticky;
+  top: 0;
+  background: var(--ig-primary-background);
+  padding-bottom: 12px;
+  z-index: 1;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--ig-border-color);
+  border-radius: 20px;
+  font-size: 14px;
+  background: var(--ig-secondary-background);
+  color: var(--ig-primary-text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--ig-blue);
+}
+
+.btn-search {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  background: var(--ig-blue);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-search:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-search:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.search-results {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.search-loading,
+.search-empty,
+.search-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--ig-secondary-text);
+}
+
+.search-loading span,
+.search-empty span,
+.search-placeholder span {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.search-loading p,
+.search-empty p,
+.search-placeholder p {
+  font-size: 14px;
+  margin: 0;
+}
+
+.search-results-header {
+  padding: 8px 12px;
+  background: var(--ig-secondary-background);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--ig-secondary-text);
+  font-weight: 600;
+}
+
+.search-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-result-item {
+  padding: 12px;
+  background: var(--ig-secondary-background);
+  border-radius: 12px;
+  border: 1px solid var(--ig-border-color);
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.search-result-item:hover {
+  background: var(--ig-tertiary-background);
+}
+
+.search-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.search-result-sender {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ig-primary-text);
+}
+
+.search-result-time {
+  font-size: 12px;
+  color: var(--ig-secondary-text);
+}
+
+.search-result-content {
+  font-size: 14px;
+  color: var(--ig-primary-text);
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.search-result-content mark {
+  background-color: #ffeb3b;
+  color: #000;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .search-result-content mark {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.search-result-file {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ig-blue);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
